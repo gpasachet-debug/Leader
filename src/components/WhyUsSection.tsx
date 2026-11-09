@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ShieldCheck, LineChart, ShieldAlert, Clock, CheckCircle, MapPin, MessageSquare, Award, Sparkles, Check } from 'lucide-react';
 import { WHY_LEADER_BENEFITS, LEADER_INFO } from '../data/content';
 import { LeaderLogo } from './LeaderLogo';
+import imgQualityGuarantee from '../assets/images/leader_quality_guarantee_audit_1794215662004.jpg';
 
 export const WhyUsSection: React.FC = () => {
   const iconList = [LineChart, ShieldCheck, ShieldAlert, Clock];
@@ -105,7 +106,7 @@ export const WhyUsSection: React.FC = () => {
               {/* Photo Banner with Rounded Corners matching user specification */}
               <div className="relative w-full h-52 sm:h-56 rounded-2xl overflow-hidden mb-6 border border-slate-700/60 shadow-lg bg-slate-900">
                 <img
-                  src="/assets/images/leader_quality_guarantee_audit_1794215662004.jpg"
+                  src={imgQualityGuarantee}
                   alt="Auditoría tributaria y garantía de calidad Leader"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-[center_20%] transition-transform duration-500 hover:scale-105"

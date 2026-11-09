@@ -3,6 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Store, Building2, ShoppingBag, Briefcase, CheckCircle, ArrowRight, MessageSquare } from 'lucide-react';
 import { TARGET_AUDIENCES, TargetAudience } from '../data/content';
 
+import imgMypes from '../assets/images/small_business_retail_pos_1794215660551.jpg';
+import imgEmpresas from '../assets/images/business_growth_meeting_1794215306152.jpg';
+import imgComerciantes from '../assets/images/tax_advisory_charts_1794215304966.jpg';
+import imgIndependientes from '../assets/images/independent_consultant_workspace_1794215661910.jpg';
+
 const iconMap: Record<string, React.ElementType> = {
   Store,
   Building2,
@@ -11,10 +16,10 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const audienceImages: Record<string, string> = {
-  mypes: "/assets/images/small_business_retail_pos_1794215660551.jpg",
-  empresas: "/assets/images/business_growth_meeting_1794215306152.jpg",
-  comerciantes: "/assets/images/tax_advisory_charts_1794215304966.jpg",
-  independientes: "/assets/images/independent_consultant_workspace_1794215661910.jpg",
+  mypes: imgMypes,
+  empresas: imgEmpresas,
+  comerciantes: imgComerciantes,
+  independientes: imgIndependientes,
 };
 
 export const TargetAudienceSection: React.FC = () => {

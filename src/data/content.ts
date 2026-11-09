@@ -1,3 +1,10 @@
+import imgAccountingDesk from '../assets/images/accounting_ledger_desk_1794215304892.jpg';
+import imgMonthlyAccounting from '../assets/images/monthly_accounting_spreadsheets_1794215659747.jpg';
+import imgTaxAdvisory from '../assets/images/tax_advisory_charts_1794215304966.jpg';
+import imgPayrollHr from '../assets/images/payroll_hr_management_1794215306711.jpg';
+import imgTaxDebt from '../assets/images/tax_debt_settlement_docs_1794215660495.jpg';
+import imgBusinessGrowth from '../assets/images/business_growth_meeting_1794215306152.jpg';
+
 export interface ServiceItem {
   id: string;
   number: string;
@@ -59,7 +66,7 @@ export const SERVICES: ServiceItem[] = [
       "Papel de trabajo con detalle de compras y ventas calculadas",
     ],
     iconName: "FileCheck",
-    image: "/assets/images/accounting_ledger_desk_1794215304892.jpg",
+    image: imgAccountingDesk,
   },
   {
     id: "contabilidad-mensual",
@@ -81,7 +88,7 @@ export const SERVICES: ServiceItem[] = [
       "Resumen ejecutivo de ingresos, egresos y margen neto",
     ],
     iconName: "Calculator",
-    image: "/assets/images/monthly_accounting_spreadsheets_1794215659747.jpg",
+    image: imgMonthlyAccounting,
   },
   {
     id: "asesoria-tributaria",
@@ -103,7 +110,7 @@ export const SERVICES: ServiceItem[] = [
       "Estrategia de optimización de costos tributarios",
     ],
     iconName: "ShieldAlert",
-    image: "/assets/images/tax_advisory_charts_1794215304966.jpg",
+    image: imgTaxAdvisory,
   },
   {
     id: "planillas-laborales",
@@ -125,7 +132,7 @@ export const SERVICES: ServiceItem[] = [
       "Archivo de cálculo para aportes AFPnet y Essalud",
     ],
     iconName: "Users2",
-    image: "/assets/images/payroll_hr_management_1794215306711.jpg",
+    image: imgPayrollHr,
   },
   {
     id: "regularizacion-deudas",
@@ -147,7 +154,7 @@ export const SERVICES: ServiceItem[] = [
       "Cronograma mensual de cuotas fraccionadas",
     ],
     iconName: "AlertCircle",
-    image: "/assets/images/tax_debt_settlement_docs_1794215660495.jpg",
+    image: imgTaxDebt,
   },
   {
     id: "formalizacion-empresas",
@@ -169,7 +176,7 @@ export const SERVICES: ServiceItem[] = [
       "Padrón de libros y sistema de emisión electrónica activado",
     ],
     iconName: "Building",
-    image: "/assets/images/business_growth_meeting_1794215306152.jpg",
+    image: imgBusinessGrowth,
   },
 ];
 

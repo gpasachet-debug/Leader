@@ -83,6 +83,9 @@ export const ServicesSection: React.FC = () => {
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A36] via-[#0B1A36]/15 to-transparent" />
                       
@@ -225,6 +228,9 @@ export const ServicesSection: React.FC = () => {
                     alt={selectedService.title}
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A36] via-transparent to-transparent" />
                 </div>
