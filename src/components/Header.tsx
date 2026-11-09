@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { LeaderLogo } from './LeaderLogo';
-import { MessageCircle, Menu, X, PhoneCall } from 'lucide-react';
+import { Menu, X, PhoneCall } from 'lucide-react';
 import { LEADER_INFO } from '../data/content';
 
 export const Header: React.FC = () => {
@@ -46,14 +46,14 @@ export const Header: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-8">
+        <div className="relative flex items-center justify-between min-h-[60px] sm:min-h-[70px]">
           {/* Zone 1: Single element brand wordmark */}
-          <a href="#" className="shrink-0 transition-opacity hover:opacity-95" aria-label="Leader Home">
+          <a href="#" className="shrink-0 transition-opacity hover:opacity-95 z-10" aria-label="Leader Home">
             <LeaderLogo size="header" />
           </a>
 
-          {/* Zone 2: 4-5 single-line clean navigation links */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
+          {/* Zone 2: Perfectly centered navigation links */}
+          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-8 text-sm font-medium text-slate-300 pointer-events-auto">
             {navLinks.map((link) => (
               <a
                 key={link.label}
@@ -66,25 +66,11 @@ export const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Zone 3: 1 primary action */}
-          <div className="flex items-center gap-3 shrink-0">
-            <a
-              href={`https://wa.me/51913150524?text=${encodeURIComponent(
-                'Hola Leader, quisiera coordinar una consulta contable y tributaria para mi negocio.'
-              )}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 rounded-lg shadow-lg shadow-emerald-950/40 border border-emerald-400/30 transition-all duration-200 active:scale-95 whitespace-nowrap shrink-0"
-            >
-              <MessageCircle className="w-4 h-4 text-emerald-100 fill-emerald-100/20" />
-              <span className="hidden sm:inline">Consulta por WhatsApp</span>
-              <span className="sm:hidden">WhatsApp</span>
-            </a>
-
-            {/* Mobile menu button */}
+          {/* Zone 3: Mobile menu button (floating WhatsApp is kept as primary contact) */}
+          <div className="flex items-center md:hidden shrink-0 z-10">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/60 focus:outline-none"
+              className="p-2 text-slate-300 hover:text-white rounded-lg hover:bg-slate-800/60 focus:outline-none cursor-pointer"
               aria-label="Abrir menú"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
