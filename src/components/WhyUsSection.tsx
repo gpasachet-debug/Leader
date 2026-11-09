@@ -98,9 +98,26 @@ export const WhyUsSection: React.FC = () => {
                 </div>
               </div>
 
-              <p className="text-sm text-slate-200 leading-relaxed mb-6">
+              <p className="text-sm text-slate-200 leading-relaxed mb-5">
                 Al confiar tu contabilidad a Leader, recibes acompañamiento profesional liderado por <strong className="text-white">Jorge Pasache</strong>, garantizando que cada trámite esté respaldado por más de 25 años de experiencia.
               </p>
+
+              {/* Photo Banner with Rounded Corners matching user specification */}
+              <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-6 border border-slate-700/60 shadow-lg bg-slate-900">
+                <img
+                  src="/src/assets/images/leader_quality_guarantee_audit_1794215662004.jpg"
+                  alt="Auditoría tributaria y garantía de calidad Leader"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#091833] via-transparent to-transparent" />
+                <div className="absolute bottom-2.5 left-3">
+                  <span className="text-[11px] font-bold text-cyan-300 bg-[#071328]/85 backdrop-blur-md px-2.5 py-1 rounded-md border border-cyan-500/30">
+                    Auditoría & Respaldo Permanente
+                  </span>
+                </div>
+              </div>
 
               {/* Checklist */}
               <div className="space-y-3.5 mb-8">

@@ -10,6 +10,13 @@ const iconMap: Record<string, React.ElementType> = {
   Briefcase,
 };
 
+const audienceImages: Record<string, string> = {
+  mypes: "/src/assets/images/small_business_retail_pos_1794215660551.jpg",
+  empresas: "/src/assets/images/business_growth_meeting_1794215306152.jpg",
+  comerciantes: "/src/assets/images/tax_advisory_charts_1794215304966.jpg",
+  independientes: "/src/assets/images/independent_consultant_workspace_1794215661910.jpg",
+};
+
 export const TargetAudienceSection: React.FC = () => {
   const [activeTabId, setActiveTabId] = useState<string>(TARGET_AUDIENCES[0].id);
 
@@ -72,9 +79,28 @@ export const TargetAudienceSection: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="p-8 sm:p-10 rounded-3xl bg-[#0B1C3D] border border-cyan-500/30 shadow-2xl max-w-4xl mx-auto"
+            className="p-6 sm:p-9 rounded-3xl bg-[#0B1C3D] border border-cyan-500/30 shadow-2xl max-w-4xl mx-auto"
           >
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-700/60">
+            {/* Visual Photo Header with Rounded Corners matching user example */}
+            <div className="relative w-full h-48 sm:h-60 rounded-2xl overflow-hidden mb-8 border border-slate-700/60 shadow-xl bg-slate-900">
+              <img
+                src={audienceImages[activeAudience.id] || "/src/assets/images/business_growth_meeting_1794215306152.jpg"}
+                alt={activeAudience.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1C3D] via-[#0B1C3D]/30 to-transparent" />
+              <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between gap-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 px-3 py-1 rounded-md bg-[#071126]/85 backdrop-blur-md border border-emerald-500/30">
+                  {activeAudience.subtitle}
+                </span>
+                <span className="text-xs text-slate-300 font-medium px-3 py-1 rounded-md bg-[#071126]/85 backdrop-blur-md border border-slate-700 hidden sm:inline">
+                  Ejemplos: {activeAudience.examples}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-6 pb-6 border-b border-slate-700/60">
               <div className="flex items-center gap-4">
                 <motion.div
                   initial={{ rotate: -10, scale: 0.9 }}
@@ -85,17 +111,13 @@ export const TargetAudienceSection: React.FC = () => {
                   <ActiveIcon className="w-7 h-7 text-cyan-300" />
                 </motion.div>
                 <div>
-                  <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider block">
-                    {activeAudience.subtitle}
-                  </span>
                   <h3 className="text-2xl sm:text-3xl font-extrabold text-white mt-0.5">
                     {activeAudience.title}
                   </h3>
+                  <span className="text-xs text-cyan-300 font-medium sm:hidden block mt-1">
+                    {activeAudience.examples}
+                  </span>
                 </div>
-              </div>
-
-              <div className="px-3.5 py-1.5 rounded-lg bg-slate-900/80 border border-slate-700 text-xs text-slate-300 font-medium">
-                Ejemplos: {activeAudience.examples}
               </div>
             </div>
 

@@ -68,26 +68,43 @@ export const ServicesSection: React.FC = () => {
                 viewport={{ once: true, amount: 0.15 }}
                 transition={{ duration: 0.55, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ y: -8, scale: 1.015 }}
-                className="group relative rounded-2xl p-6 sm:p-7 bg-[#0B1A36] border border-slate-700/60 hover:border-cyan-400/50 shadow-xl hover:shadow-2xl hover:shadow-cyan-950/50 transition-colors flex flex-col justify-between"
+                className="group relative rounded-2xl p-5 sm:p-6 bg-[#0B1A36] border border-slate-700/60 hover:border-cyan-400/50 shadow-xl hover:shadow-2xl hover:shadow-cyan-950/50 transition-colors flex flex-col justify-between"
               >
                 {/* Glow highlight on hover */}
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                 <div>
-                  {/* Top Row: Number & Badge */}
-                  <div className="flex items-center justify-between mb-5">
-                    <span className="text-2xl font-black text-cyan-400/80 font-mono group-hover:text-cyan-300 group-hover:translate-x-1 transition-all">
-                      {service.number}
-                    </span>
-                    <span className="text-xs font-semibold text-emerald-300 px-2.5 py-1 rounded-md bg-emerald-950/60 border border-emerald-500/20 group-hover:border-emerald-400/40 transition-colors">
-                      {service.badge}
-                    </span>
-                  </div>
+                  {/* Image Banner on Top of Card */}
+                  {service.image && (
+                    <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden mb-5 border border-slate-700/60 bg-slate-900 shadow-md">
+                      <img
+                        src={service.image}
+                        alt={service.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A36] via-[#0B1A36]/20 to-transparent" />
+                      
+                      {/* Badge positioned over image */}
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className="text-[11px] font-semibold text-emerald-300 px-2.5 py-1 rounded-md bg-[#061021]/85 backdrop-blur-md border border-emerald-500/30 shadow-md">
+                          {service.badge}
+                        </span>
+                      </div>
+
+                      <div className="absolute bottom-2 left-3">
+                        <span className="text-xl font-black text-cyan-400 font-mono drop-shadow-md">
+                          {service.number}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Icon & Title */}
-                  <div className="flex items-start gap-3.5 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0 group-hover:border-cyan-300 group-hover:scale-110 transition-all duration-300">
-                      <Icon className="w-6 h-6 text-cyan-300" />
+                  <div className="flex items-start gap-3.5 mb-3">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0 group-hover:border-cyan-300 group-hover:scale-110 transition-all duration-300">
+                      <Icon className="w-5 h-5 text-cyan-300" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-white group-hover:text-cyan-200 transition-colors leading-snug">
@@ -97,12 +114,12 @@ export const ServicesSection: React.FC = () => {
                   </div>
 
                   {/* Short Description */}
-                  <p className="text-sm text-slate-300 leading-relaxed mb-6">
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-5">
                     {service.shortDesc}
                   </p>
 
                   {/* Top 3 Benefits list */}
-                  <div className="space-y-2 mb-6 pt-4 border-t border-slate-800/80">
+                  <div className="space-y-2 mb-6 pt-3.5 border-t border-slate-800/80">
                     {service.benefits.slice(0, 3).map((benefit, bIdx) => (
                       <div key={bIdx} className="flex items-start gap-2 text-xs text-slate-300">
                         <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -199,6 +216,19 @@ export const ServicesSection: React.FC = () => {
                   {selectedService.badge}
                 </span>
               </div>
+
+              {/* Modal Image Header */}
+              {selectedService.image && (
+                <div className="relative w-full h-48 sm:h-56 rounded-xl overflow-hidden mb-5 border border-slate-700/60 shadow-lg">
+                  <img
+                    src={selectedService.image}
+                    alt={selectedService.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A36] via-transparent to-transparent" />
+                </div>
+              )}
 
               <h3 className="text-2xl font-extrabold text-white mb-4">
                 {selectedService.title}
