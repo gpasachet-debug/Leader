@@ -5,7 +5,7 @@ import { LEADER_INFO } from '../data/content';
 
 export const Hero: React.FC = () => {
   return (
-    <section className="relative min-h-[92vh] flex items-center pt-32 sm:pt-36 lg:pt-40 pb-16 overflow-hidden bg-gradient-to-b from-[#060D1D] via-[#08152B] to-[#0A1A36]">
+    <section className="relative min-h-[92vh] flex items-center pt-36 sm:pt-40 lg:pt-48 pb-16 overflow-hidden bg-gradient-to-b from-[#060D1D] via-[#08152B] to-[#0A1A36]">
       {/* Background ambient lighting effects matching cyan & emerald brand identity */}
       <div className="absolute top-1/4 -left-40 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-0 w-[30rem] h-[30rem] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
