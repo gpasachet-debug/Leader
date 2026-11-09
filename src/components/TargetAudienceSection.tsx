@@ -46,18 +46,20 @@ export const TargetAudienceSection: React.FC = () => {
             const Icon = iconMap[audience.icon] || Store;
             const isActive = audience.id === activeTabId;
             return (
-              <button
+              <motion.button
                 key={audience.id}
+                whileHover={{ y: -3, scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setActiveTabId(audience.id)}
                 className={`flex items-center gap-2.5 px-4 sm:px-5 py-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer whitespace-nowrap ${
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-950/50 border border-cyan-300/40 scale-102'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-950/60 border border-cyan-300/40 scale-102'
                     : 'bg-[#0B1A38] hover:bg-[#0E224A] text-slate-300 border border-slate-700/60'
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-cyan-400'}`} />
                 <span>{audience.title}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -66,17 +68,22 @@ export const TargetAudienceSection: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={activeAudience.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3 }}
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.98 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="p-8 sm:p-10 rounded-3xl bg-[#0B1C3D] border border-cyan-500/30 shadow-2xl max-w-4xl mx-auto"
           >
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8 pb-6 border-b border-slate-700/60">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0">
+                <motion.div
+                  initial={{ rotate: -10, scale: 0.9 }}
+                  animate={{ rotate: 0, scale: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0"
+                >
                   <ActiveIcon className="w-7 h-7 text-cyan-300" />
-                </div>
+                </motion.div>
                 <div>
                   <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider block">
                     {activeAudience.subtitle}
@@ -102,15 +109,19 @@ export const TargetAudienceSection: React.FC = () => {
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {activeAudience.keyHelp.map((help, idx) => (
-                  <div
+                  <motion.div
                     key={idx}
-                    className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-3"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: idx * 0.1 }}
+                    whileHover={{ y: -4, borderColor: 'rgba(0,194,255,0.4)' }}
+                    className="p-4 rounded-xl bg-slate-900/70 border border-slate-800 flex items-start gap-3 transition-colors cursor-default"
                   >
                     <CheckCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                     <span className="text-xs sm:text-sm font-medium text-slate-200 leading-snug">
                       {help}
                     </span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>

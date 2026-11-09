@@ -68,9 +68,15 @@ export const SunatAlertSection: React.FC = () => {
               </div>
 
               {/* Crucial Warnings Box */}
-              <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 mb-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 mb-6 shadow-lg shadow-amber-950/20"
+              >
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-xs uppercase tracking-wider mb-2">
-                  <AlertCircle className="w-4 h-4" />
+                  <AlertCircle className="w-4 h-4 animate-bounce" />
                   Puntos Importantes a Tener en Cuenta:
                 </div>
                 <ul className="space-y-1.5 text-xs text-amber-100/90 list-disc list-inside">
@@ -78,7 +84,7 @@ export const SunatAlertSection: React.FC = () => {
                     <li key={idx}>{w}</li>
                   ))}
                 </ul>
-              </div>
+              </motion.div>
 
               {/* How Leader Helps Box */}
               <div className="p-4 rounded-xl bg-slate-900/70 border border-cyan-500/20 mb-6">
@@ -98,7 +104,9 @@ export const SunatAlertSection: React.FC = () => {
 
             {/* Bottom Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-slate-700/60">
-              <a
+              <motion.a
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 href={`https://wa.me/51913150524?text=${encodeURIComponent(
                   'Hola Jorge Pasache, quisiera consultar si mi negocio en Chincha puede acceder a las facilidades tributarias de SUNAT.'
                 )}`}
@@ -108,7 +116,7 @@ export const SunatAlertSection: React.FC = () => {
               >
                 <MessageSquare className="w-4 h-4" />
                 Consultar con Nosotros por WhatsApp
-              </a>
+              </motion.a>
 
               <span className="text-[11px] text-slate-400 text-center sm:text-right">
                 Fuente: R.S. N.° 051-2019/SUNAT
@@ -134,7 +142,7 @@ export const SunatAlertSection: React.FC = () => {
                     Evaluación de Calificación
                   </h3>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center animate-pulse">
                   <Scale className="w-5 h-5 text-cyan-400" />
                 </div>
               </div>
@@ -162,15 +170,23 @@ export const SunatAlertSection: React.FC = () => {
                     desc: 'Aseguramos que SUNAT no emita órdenes de pago indebidas ni trabe medidas cautelares en tus cuentas.',
                   },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                    <span className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold text-xs flex items-center justify-center shrink-0">
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.15 + idx * 0.1 }}
+                    whileHover={{ x: 5, transition: { duration: 0.2 } }}
+                    className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 hover:bg-slate-900/80 transition-all cursor-default"
+                  >
+                    <span className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-bold text-xs flex items-center justify-center shrink-0 border border-cyan-500/30">
                       {item.step}
                     </span>
                     <div>
                       <h4 className="text-xs font-bold text-white">{item.title}</h4>
                       <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{item.desc}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -186,16 +202,18 @@ export const SunatAlertSection: React.FC = () => {
                     Revisión de Ficha RUC sin costo de consulta.
                   </span>
                 </div>
-                <a
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   href={`https://wa.me/51913150524?text=${encodeURIComponent(
                     'Hola Jorge Pasache, quisiera que revisen si mi Ficha RUC califica para facilidades tributarias SUNAT.'
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="whitespace-nowrap px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs shadow-md transition-all text-center"
+                  className="whitespace-nowrap px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-xs shadow-md transition-all text-center inline-block"
                 >
                   Verificar por WhatsApp
-                </a>
+                </motion.a>
               </div>
             </div>
           </motion.div>

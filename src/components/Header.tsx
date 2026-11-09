@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useSpring } from 'motion/react';
 import { LeaderLogo } from './LeaderLogo';
 import { MessageCircle, Menu, X, PhoneCall } from 'lucide-react';
 import { LEADER_INFO } from '../data/content';
@@ -6,6 +7,13 @@ import { LEADER_INFO } from '../data/content';
 export const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,6 +39,12 @@ export const Header: React.FC = () => {
           : 'bg-transparent py-4 sm:py-6'
       }`}
     >
+      {/* Scroll Progress Bar */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400 origin-left"
+        style={{ scaleX }}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-8">
           {/* Zone 1: Single element brand wordmark */}

@@ -76,7 +76,9 @@ export const ConsultationForm: React.FC = () => {
 
               <div className="space-y-4">
                 {/* Primary WhatsApp / Phone */}
-                <a
+                <motion.a
+                  whileHover={{ y: -3, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
                   href={`https://wa.me/51913150524`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -98,10 +100,12 @@ export const ConsultationForm: React.FC = () => {
                   <span className="text-xs font-semibold text-emerald-300 group-hover:translate-x-1 transition-transform">
                     Chatear →
                   </span>
-                </a>
+                </motion.a>
 
                 {/* Secondary WhatsApp / Phone */}
-                <a
+                <motion.a
+                  whileHover={{ y: -3, scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
                   href={`https://wa.me/51933884597`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -123,7 +127,7 @@ export const ConsultationForm: React.FC = () => {
                   <span className="text-xs font-semibold text-cyan-300 group-hover:translate-x-1 transition-transform">
                     Contactar →
                   </span>
-                </a>
+                </motion.a>
               </div>
 
               {/* Office & Hours */}
@@ -287,13 +291,15 @@ export const ConsultationForm: React.FC = () => {
                     />
                   </div>
 
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     type="submit"
-                    className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-emerald-950/50 border border-emerald-400/40 transition-all hover:scale-101 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-sm sm:text-base shadow-xl shadow-emerald-950/50 border border-emerald-400/40 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     Enviar Consulta y Abrir WhatsApp Directo
-                  </button>
+                  </motion.button>
 
                   <p className="text-[11px] text-slate-400 text-center">
                     Respuesta garantizada en menos de 2 horas en horario laboral.

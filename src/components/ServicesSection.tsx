@@ -63,30 +63,30 @@ export const ServicesSection: React.FC = () => {
             return (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 35, scale: 0.97 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.5, delay: index * 0.08 }}
-                whileHover={{ y: -4 }}
-                className="group relative rounded-2xl p-6 sm:p-7 bg-[#0B1A36] border border-slate-700/60 hover:border-cyan-400/50 shadow-xl hover:shadow-2xl hover:shadow-cyan-950/40 transition-all flex flex-col justify-between"
+                transition={{ duration: 0.55, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -8, scale: 1.015 }}
+                className="group relative rounded-2xl p-6 sm:p-7 bg-[#0B1A36] border border-slate-700/60 hover:border-cyan-400/50 shadow-xl hover:shadow-2xl hover:shadow-cyan-950/50 transition-colors flex flex-col justify-between"
               >
                 {/* Glow highlight on hover */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/10 via-transparent to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
                 <div>
                   {/* Top Row: Number & Badge */}
                   <div className="flex items-center justify-between mb-5">
-                    <span className="text-2xl font-black text-cyan-400/80 font-mono">
+                    <span className="text-2xl font-black text-cyan-400/80 font-mono group-hover:text-cyan-300 group-hover:translate-x-1 transition-all">
                       {service.number}
                     </span>
-                    <span className="text-xs font-semibold text-emerald-300 px-2.5 py-1 rounded-md bg-emerald-950/60 border border-emerald-500/20">
+                    <span className="text-xs font-semibold text-emerald-300 px-2.5 py-1 rounded-md bg-emerald-950/60 border border-emerald-500/20 group-hover:border-emerald-400/40 transition-colors">
                       {service.badge}
                     </span>
                   </div>
 
                   {/* Icon & Title */}
                   <div className="flex items-start gap-3.5 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0 group-hover:border-cyan-300 transition-colors">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0 group-hover:border-cyan-300 group-hover:scale-110 transition-all duration-300">
                       <Icon className="w-6 h-6 text-cyan-300" />
                     </div>
                     <div>
@@ -116,18 +116,18 @@ export const ServicesSection: React.FC = () => {
                 <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
                   <button
                     onClick={() => setSelectedService(service)}
-                    className="text-xs font-semibold text-cyan-300 hover:text-cyan-100 flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="text-xs font-semibold text-cyan-300 hover:text-cyan-100 flex items-center gap-1.5 transition-colors cursor-pointer group-hover:translate-x-1 duration-200"
                   >
                     Ver detalles <ArrowRight className="w-3.5 h-3.5" />
                   </button>
 
                   <a
                     href={`https://wa.me/51913150524?text=${encodeURIComponent(
-                      `Hola Jorge, deseo consultar sobre el servicio "${service.title}" para mi negocio.`
+                      `Hola Jorge Pasache, deseo consultar sobre el servicio "${service.title}" para mi negocio.`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all hover:scale-102"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all hover:scale-105"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     Cotizar

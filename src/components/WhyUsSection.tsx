@@ -43,15 +43,16 @@ export const WhyUsSection: React.FC = () => {
                   key={idx}
                   initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  className="p-6 rounded-2xl bg-[#0B1A36] border border-slate-700/60 hover:border-cyan-400/40 shadow-xl transition-all flex flex-col justify-between"
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay: idx * 0.12 }}
+                  whileHover={{ y: -6, scale: 1.02, transition: { type: "spring", stiffness: 350, damping: 20 } }}
+                  className="p-6 rounded-2xl bg-[#0B1A36] border border-slate-700/60 hover:border-cyan-400/50 shadow-xl hover:shadow-cyan-950/40 transition-all flex flex-col justify-between group"
                 >
                   <div>
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-400/30 flex items-center justify-center mb-4">
-                      <Icon className="w-6 h-6 text-cyan-300" />
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 border border-cyan-400/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <Icon className="w-6 h-6 text-cyan-300 group-hover:text-cyan-200" />
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-2 leading-snug">
+                    <h3 className="text-lg font-bold text-white mb-2 leading-snug group-hover:text-cyan-200 transition-colors">
                       {benefit.title}
                     </h3>
                     <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
@@ -60,7 +61,7 @@ export const WhyUsSection: React.FC = () => {
                   </div>
 
                   <div className="mt-5 pt-4 border-t border-slate-800 flex items-baseline justify-between">
-                    <span className="text-2xl font-black text-emerald-400 font-mono">
+                    <span className="text-2xl font-black text-emerald-400 font-mono tracking-tight group-hover:text-emerald-300 transition-colors">
                       {benefit.stat}
                     </span>
                     <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
@@ -72,12 +73,13 @@ export const WhyUsSection: React.FC = () => {
             })}
           </div>
 
-          {/* Right: Bespoke Guarantee & Value Panel (No external flyer) */}
+          {/* Right: Bespoke Guarantee & Value Panel */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-40px" }}
             transition={{ duration: 0.6 }}
+            whileHover={{ y: -4, transition: { duration: 0.25 } }}
             className="lg:col-span-5 flex flex-col justify-between p-7 sm:p-8 rounded-3xl bg-gradient-to-b from-[#0C1E40] via-[#0A1833] to-[#071328] border border-cyan-500/40 shadow-2xl shadow-cyan-950/40"
           >
             <div>
@@ -91,7 +93,7 @@ export const WhyUsSection: React.FC = () => {
                     Garantía Leader en Chincha
                   </h3>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center animate-pulse">
                   <Award className="w-5 h-5 text-amber-400" />
                 </div>
               </div>
@@ -109,12 +111,19 @@ export const WhyUsSection: React.FC = () => {
                   'Gestión segura de planillas, T-Registro y beneficios de tus trabajadores',
                   'Asesoramiento integral en bancarización y sustento de crédito fiscal',
                 ].map((item, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2 + i * 0.08 }}
+                    className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300 hover:text-white transition-colors"
+                  >
                     <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
                       <Check className="w-3 h-3 text-emerald-400" />
                     </div>
                     <span>{item}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -130,7 +139,9 @@ export const WhyUsSection: React.FC = () => {
                 </p>
               </div>
 
-              <a
+              <motion.a
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
                 href={`https://wa.me/51913150524?text=${encodeURIComponent(
                   'Hola Jorge Pasache, quisiera conversar sobre los servicios contables y beneficios de Leader.'
                 )}`}
@@ -140,7 +151,7 @@ export const WhyUsSection: React.FC = () => {
               >
                 <MessageSquare className="w-4 h-4" />
                 Conversar con Jorge
-              </a>
+              </motion.a>
             </div>
           </motion.div>
 

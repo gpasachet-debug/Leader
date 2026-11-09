@@ -80,8 +80,10 @@ export const RucCalendarTool: React.FC = () => {
             {/* Digit Selection Pills/Buttons */}
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 mb-6">
               {digits.map((digit) => (
-                <button
+                <motion.button
                   key={digit}
+                  whileHover={{ scale: 1.08, y: -2 }}
+                  whileTap={{ scale: 0.94 }}
                   onClick={() => setSelectedDigit(digit)}
                   className={`py-3 px-2 rounded-xl text-center font-bold text-sm sm:text-base transition-all duration-200 cursor-pointer ${
                     selectedDigit === digit
@@ -93,12 +95,18 @@ export const RucCalendarTool: React.FC = () => {
                     {digit === 'BC' ? 'Especial' : 'Dígito'}
                   </span>
                   <span className="text-lg">{digit}</span>
-                </button>
+                </motion.button>
               ))}
             </div>
 
-            {/* Selected Result Box */}
-            <div className="p-5 rounded-2xl bg-slate-900/80 border border-cyan-500/20 mb-6">
+            {/* Selected Result Box with smooth transition */}
+            <motion.div
+              key={String(selectedDigit)}
+              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.25 }}
+              className="p-5 rounded-2xl bg-slate-900/80 border border-cyan-500/30 mb-6 shadow-lg shadow-cyan-950/30"
+            >
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center font-black text-xl text-cyan-300 font-mono">
@@ -110,7 +118,7 @@ export const RucCalendarTool: React.FC = () => {
                   </div>
                 </div>
 
-                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-800">
+                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-cyan-950 text-cyan-300 border border-cyan-800 animate-pulse">
                   {currentInfo.urgency}
                 </span>
               </div>
@@ -118,7 +126,7 @@ export const RucCalendarTool: React.FC = () => {
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#0A1832] p-3 rounded-lg border border-slate-800">
                 {currentInfo.advice}
               </p>
-            </div>
+            </motion.div>
 
             {/* Direct WhatsApp Action for Selected Digit */}
             <div className="flex flex-col sm:flex-row items-center gap-4">

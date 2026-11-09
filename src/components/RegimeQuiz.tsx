@@ -59,13 +59,24 @@ export const RegimeQuiz: React.FC = () => {
             Responde 3 preguntas rápidas y descubre qué régimen tributario peruano te permite pagar lo justo y crecer sin contingencias.
           </p>
 
+          {/* Animated Quiz Progress Bar */}
+          <div className="w-full h-1.5 bg-slate-800 rounded-full mb-8 overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400"
+              initial={{ width: '25%' }}
+              animate={{ width: `${(step / 4) * 100}%` }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+            />
+          </div>
+
           <AnimatePresence mode="wait">
             {step === 1 && (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 25 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.3 }}
                 className="space-y-4"
               >
                 <div className="text-xs font-bold text-cyan-300 uppercase tracking-wider">
@@ -77,21 +88,23 @@ export const RegimeQuiz: React.FC = () => {
                     { id: 'under_525k', label: 'Entre S/ 8,000 y S/ 43,000', sub: '(Hasta S/ 525,000 al año)' },
                     { id: 'over_525k', label: 'Más de S/ 43,000 al mes', sub: '(Empresa en crecimiento)' },
                   ].map((opt) => (
-                    <button
+                    <motion.button
                       key={opt.id}
+                      whileHover={{ scale: 1.03, y: -3 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => {
                         setSales(opt.id);
                         setStep(2);
                       }}
                       className={`p-4 rounded-xl text-left border transition-all cursor-pointer ${
                         sales === opt.id
-                          ? 'bg-cyan-500/20 border-cyan-400 text-white'
+                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-950/40'
                           : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-700 text-slate-200'
                       }`}
                     >
                       <div className="text-sm font-bold text-white">{opt.label}</div>
                       <div className="text-xs text-slate-400 mt-1">{opt.sub}</div>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
@@ -100,9 +113,10 @@ export const RegimeQuiz: React.FC = () => {
             {step === 2 && (
               <motion.div
                 key="step2"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 25 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.3 }}
                 className="space-y-4"
               >
                 <div className="text-xs font-bold text-cyan-300 uppercase tracking-wider">
@@ -114,21 +128,23 @@ export const RegimeQuiz: React.FC = () => {
                     { id: 'companies', label: 'Empresas y Negocios', sub: 'Te exigen Factura para deducir costos' },
                     { id: 'mixed', label: 'Mixto (Boletas y Facturas)', sub: 'Venta tanto a público como a empresas' },
                   ].map((opt) => (
-                    <button
+                    <motion.button
                       key={opt.id}
+                      whileHover={{ scale: 1.03, y: -3 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => {
                         setClients(opt.id);
                         setStep(3);
                       }}
                       className={`p-4 rounded-xl text-left border transition-all cursor-pointer ${
                         clients === opt.id
-                          ? 'bg-cyan-500/20 border-cyan-400 text-white'
+                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-950/40'
                           : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-700 text-slate-200'
                       }`}
                     >
                       <div className="text-sm font-bold text-white">{opt.label}</div>
                       <div className="text-xs text-slate-400 mt-1">{opt.sub}</div>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
@@ -137,9 +153,10 @@ export const RegimeQuiz: React.FC = () => {
             {step === 3 && (
               <motion.div
                 key="step3"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 25 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -25 }}
+                transition={{ duration: 0.3 }}
                 className="space-y-4"
               >
                 <div className="text-xs font-bold text-cyan-300 uppercase tracking-wider">
@@ -151,21 +168,23 @@ export const RegimeQuiz: React.FC = () => {
                     { id: 'under_10', label: 'De 1 a 10 trabajadores', sub: 'Planilla pequeña o microempresa' },
                     { id: 'more_10', label: 'Más de 10 trabajadores', sub: 'Planta laboral de mediana escala' },
                   ].map((opt) => (
-                    <button
+                    <motion.button
                       key={opt.id}
+                      whileHover={{ scale: 1.03, y: -3 }}
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => {
                         setEmployees(opt.id);
                         setStep(4);
                       }}
                       className={`p-4 rounded-xl text-left border transition-all cursor-pointer ${
                         employees === opt.id
-                          ? 'bg-cyan-500/20 border-cyan-400 text-white'
+                          ? 'bg-cyan-500/20 border-cyan-400 text-white shadow-lg shadow-cyan-950/40'
                           : 'bg-slate-900/60 hover:bg-slate-800/80 border-slate-700 text-slate-200'
                       }`}
                     >
                       <div className="text-sm font-bold text-white">{opt.label}</div>
                       <div className="text-xs text-slate-400 mt-1">{opt.sub}</div>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </motion.div>
