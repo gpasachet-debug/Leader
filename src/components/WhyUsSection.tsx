@@ -105,7 +105,7 @@ export const WhyUsSection: React.FC = () => {
               {/* Photo Banner with Rounded Corners matching user specification */}
               <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-6 border border-slate-700/60 shadow-lg bg-slate-900">
                 <img
-                  src="/src/assets/images/leader_quality_guarantee_audit_1794215662004.jpg"
+                  src="/assets/images/leader_quality_guarantee_audit_1794215662004.jpg"
                   alt="Auditoría tributaria y garantía de calidad Leader"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"

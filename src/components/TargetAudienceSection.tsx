@@ -11,10 +11,10 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const audienceImages: Record<string, string> = {
-  mypes: "/src/assets/images/small_business_retail_pos_1794215660551.jpg",
-  empresas: "/src/assets/images/business_growth_meeting_1794215306152.jpg",
-  comerciantes: "/src/assets/images/tax_advisory_charts_1794215304966.jpg",
-  independientes: "/src/assets/images/independent_consultant_workspace_1794215661910.jpg",
+  mypes: "/assets/images/small_business_retail_pos_1794215660551.jpg",
+  empresas: "/assets/images/business_growth_meeting_1794215306152.jpg",
+  comerciantes: "/assets/images/tax_advisory_charts_1794215304966.jpg",
+  independientes: "/assets/images/independent_consultant_workspace_1794215661910.jpg",
 };
 
 export const TargetAudienceSection: React.FC = () => {
@@ -84,7 +84,7 @@ export const TargetAudienceSection: React.FC = () => {
             {/* Visual Photo Header with Rounded Corners matching user example */}
             <div className="relative w-full h-48 sm:h-60 rounded-2xl overflow-hidden mb-8 border border-slate-700/60 shadow-xl bg-slate-900">
               <img
-                src={audienceImages[activeAudience.id] || "/src/assets/images/business_growth_meeting_1794215306152.jpg"}
+                src={audienceImages[activeAudience.id] || "/assets/images/business_growth_meeting_1794215306152.jpg"}
                 alt={activeAudience.title}
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
