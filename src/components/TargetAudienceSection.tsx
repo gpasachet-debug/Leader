@@ -82,19 +82,19 @@ export const TargetAudienceSection: React.FC = () => {
             className="p-6 sm:p-9 rounded-3xl bg-[#0B1C3D] border border-cyan-500/30 shadow-2xl max-w-4xl mx-auto"
           >
             {/* Visual Photo Header with Rounded Corners matching user example */}
-            <div className="relative w-full h-48 sm:h-60 rounded-2xl overflow-hidden mb-8 border border-slate-700/60 shadow-xl bg-slate-900">
+            <div className="relative w-full h-64 sm:h-80 md:h-[400px] lg:h-[440px] rounded-2xl overflow-hidden mb-8 border border-slate-700/60 shadow-2xl bg-slate-900">
               <img
                 src={audienceImages[activeAudience.id] || "/assets/images/business_growth_meeting_1794215306152.jpg"}
                 alt={activeAudience.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                className="w-full h-full object-cover object-[center_20%] transition-transform duration-700 hover:scale-103"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1C3D] via-[#0B1C3D]/30 to-transparent" />
-              <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between gap-3">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 px-3 py-1 rounded-md bg-[#071126]/85 backdrop-blur-md border border-emerald-500/30">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1C3D] via-[#0B1C3D]/20 to-transparent" />
+              <div className="absolute bottom-4 left-5 right-5 flex flex-wrap items-center justify-between gap-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-300 px-3.5 py-1.5 rounded-md bg-[#071126]/85 backdrop-blur-md border border-emerald-500/30 shadow-md">
                   {activeAudience.subtitle}
                 </span>
-                <span className="text-xs text-slate-300 font-medium px-3 py-1 rounded-md bg-[#071126]/85 backdrop-blur-md border border-slate-700 hidden sm:inline">
+                <span className="text-xs text-slate-300 font-medium px-3.5 py-1.5 rounded-md bg-[#071126]/85 backdrop-blur-md border border-slate-700 hidden sm:inline shadow-md">
                   Ejemplos: {activeAudience.examples}
                 </span>
               </div>

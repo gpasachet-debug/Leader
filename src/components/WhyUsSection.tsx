@@ -103,12 +103,12 @@ export const WhyUsSection: React.FC = () => {
               </p>
 
               {/* Photo Banner with Rounded Corners matching user specification */}
-              <div className="relative w-full h-44 rounded-2xl overflow-hidden mb-6 border border-slate-700/60 shadow-lg bg-slate-900">
+              <div className="relative w-full h-52 sm:h-56 rounded-2xl overflow-hidden mb-6 border border-slate-700/60 shadow-lg bg-slate-900">
                 <img
                   src="/assets/images/leader_quality_guarantee_audit_1794215662004.jpg"
                   alt="Auditoría tributaria y garantía de calidad Leader"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  className="w-full h-full object-cover object-[center_20%] transition-transform duration-500 hover:scale-105"
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#091833] via-transparent to-transparent" />

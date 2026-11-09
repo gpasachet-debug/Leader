@@ -76,15 +76,15 @@ export const ServicesSection: React.FC = () => {
                 <div>
                   {/* Image Banner on Top of Card */}
                   {service.image && (
-                    <div className="relative w-full h-44 sm:h-48 rounded-xl overflow-hidden mb-5 border border-slate-700/60 bg-slate-900 shadow-md">
+                    <div className="relative w-full h-48 sm:h-52 rounded-xl overflow-hidden mb-5 border border-slate-700/60 bg-slate-900 shadow-md">
                       <img
                         src={service.image}
                         alt={service.title}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
+                        className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A36] via-[#0B1A36]/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A36] via-[#0B1A36]/15 to-transparent" />
                       
                       {/* Badge positioned over image */}
                       <div className="absolute top-2.5 right-2.5">
