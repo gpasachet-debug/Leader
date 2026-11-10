@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "ClientSubmission": {
+      "title": "ClientSubmission",
+      "description": "Paquete de documentos contables enviado por un cliente para su declaración mensual",
+      "type": "object",
+      "properties": {
+        "ticketId": {
+          "type": "string",
+          "description": "Código de seguimiento único del envío (ej. LDR-202602-1234)"
+        },
+        "ruc": {
+          "type": "string",
+          "description": "RUC de 11 dígitos del contribuyente"
+        },
+        "businessName": {
+          "type": "string",
+          "description": "Razón social o nombre comercial del cliente"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Teléfono o celular del cliente para contacto por WhatsApp"
+        },
+        "taxPeriod": {
+          "type": "string",
+          "description": "Periodo tributario al que corresponden los documentos (ej. Enero 2026)"
+        },
+        "docCategories": {
+          "type": "array",
+          "description": "Categorías de documentos incluidos (compras, ventas, bancos, etc.)"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Instrucciones o comentarios adicionales del cliente"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Fecha y hora de registro en formato ISO"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pendiente", "en_revision", "declarado"],
+          "description": "Estado del trámite en Leader"
+        },
+        "files": {
+          "type": "array",
+          "description": "Lista de metadatos de archivos adjuntos y enlaces de descarga"
+        },
+        "totalSize": {
+          "type": "number",
+          "description": "Peso total acumulado en bytes de los archivos"
+        }
+      },
+      "required": ["ticketId", "ruc", "taxPeriod", "createdAt", "status"]
+    },
+    "FileChunk": {
+      "title": "FileChunk",
+      "description": "Fragmento binario en Base64 de un archivo adjunto almacenado en Firestore",
+      "type": "object",
+      "properties": {
+        "fileIndex": {
+          "type": "number",
+          "description": "Índice secuencial del archivo en el envío"
+        },
+        "chunkIndex": {
+          "type": "number",
+          "description": "Índice de fragmento del archivo"
+        },
+        "totalChunks": {
+          "type": "number",
+          "description": "Cantidad total de fragmentos de este archivo"
+        },
+        "data": {
+          "type": "string",
+          "description": "Fragmento de datos codificado en Base64"
+        }
+      },
+      "required": ["fileIndex", "chunkIndex", "totalChunks", "data"]
+    }
+  },
+  "firestore": {
+    "/client_submissions/{submissionId}": {
+      "schema": {
+        "$ref": "#/entities/ClientSubmission"
+      },
+      "description": "Colección de envíos de documentos de clientes para el estudio contable Leader"
+    },
+    "/client_submissions/{submissionId}/chunks/{chunkId}": {
+      "schema": {
+        "$ref": "#/entities/FileChunk"
+      },
+      "description": "Fragmentos de archivos binarios (PDF, XML, Excel, Word) para descarga confiable"
+    }
+  }
+}

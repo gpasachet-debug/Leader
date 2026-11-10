@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 64;
+    }
+
+    function isValidSubmission(data) {
+      return data.ticketId is string && data.ticketId.size() > 0 && data.ticketId.size() <= 64
+        && data.ruc is string && data.ruc.size() == 11
+        && data.taxPeriod is string && data.taxPeriod.size() > 0 && data.taxPeriod.size() <= 64
+        && data.status in ['pendiente', 'en_revision', 'declarado']
+        && data.createdAt is string;
+    }
+
+    match /client_submissions/{submissionId} {
+      allow create: if isValidId(submissionId) && isValidSubmission(request.resource.data);
+      allow get: if isValidId(submissionId);
+      allow list: if true;
+      allow update: if isValidId(submissionId);
+      allow delete: if isValidId(submissionId);
+
+      match /chunks/{chunkId} {
+        allow get, create, update, delete: if isValidId(submissionId) && isValidId(chunkId);
+        allow list: if isValidId(submissionId);
+      }
+    }
+  }
+}

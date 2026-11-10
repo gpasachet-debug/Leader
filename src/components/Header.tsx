@@ -4,7 +4,11 @@ import { LeaderLogo } from './LeaderLogo';
 import { Menu, X, PhoneCall } from 'lucide-react';
 import { LEADER_INFO } from '../data/content';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onOpenUpload?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onOpenUpload }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -28,6 +32,7 @@ export const Header: React.FC = () => {
     { label: 'Vencimientos', href: '#vencimientos' },
     { label: 'Beneficios', href: '#beneficios' },
     { label: 'Clientes', href: '#clientes' },
+    { label: 'Enviar Archivos', href: '#enviar-archivos', highlight: true },
     { label: 'Actualidad', href: '#actualidad' },
   ];
 
@@ -53,15 +58,27 @@ export const Header: React.FC = () => {
           </a>
 
           {/* Zone 2: Perfectly centered navigation links */}
-          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-8 text-sm font-medium text-slate-300 pointer-events-auto">
+          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-4 lg:gap-7 text-sm font-medium text-slate-300 pointer-events-auto">
             {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
-                className="whitespace-nowrap shrink-0 hover:text-cyan-300 transition-colors py-1 relative group"
+                onClick={(e) => {
+                  if (link.href === '#enviar-archivos' && onOpenUpload) {
+                    e.preventDefault();
+                    onOpenUpload();
+                  }
+                }}
+                className={`whitespace-nowrap shrink-0 transition-all py-1 relative group cursor-pointer ${
+                  link.highlight
+                    ? 'text-cyan-300 font-semibold px-3 py-1 rounded-full bg-cyan-950/70 border border-cyan-500/40 hover:bg-cyan-900/60 hover:text-white shadow-sm shadow-cyan-950/50'
+                    : 'hover:text-cyan-300'
+                }`}
               >
                 {link.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300 group-hover:w-full" />
+                {!link.highlight && (
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300 group-hover:w-full" />
+                )}
               </a>
             ))}
           </nav>
@@ -86,8 +103,18 @@ export const Header: React.FC = () => {
                 <a
                   key={link.label}
                   href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 text-sm font-medium text-slate-200 hover:text-cyan-300 hover:bg-white/5 rounded-lg transition-colors"
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    if (link.href === '#enviar-archivos' && onOpenUpload) {
+                      e.preventDefault();
+                      onOpenUpload();
+                    }
+                  }}
+                  className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer ${
+                    link.highlight
+                      ? 'text-cyan-300 font-bold bg-cyan-950/60 border border-cyan-500/30'
+                      : 'text-slate-200 hover:text-cyan-300 hover:bg-white/5'
+                  }`}
                 >
                   {link.label}
                 </a>

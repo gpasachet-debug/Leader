@@ -1,9 +1,14 @@
 import React from 'react';
 import { LeaderLogo } from './LeaderLogo';
 import { LEADER_INFO, SERVICES } from '../data/content';
-import { Phone, MapPin, Mail, MessageSquare, ShieldCheck, Award } from 'lucide-react';
+import { Phone, MapPin, Mail, MessageSquare, ShieldCheck, Award, Lock } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenUpload?: () => void;
+  onOpenAdmin?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenUpload, onOpenAdmin }) => {
   return (
     <footer className="bg-[#040814] border-t border-slate-800/80 text-slate-400 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -47,6 +52,15 @@ export const Footer: React.FC = () => {
                 <a href="#clientes" className="hover:text-cyan-300 transition-colors">
                   Segmentos y Clientes
                 </a>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={onOpenUpload}
+                  className="text-cyan-400 hover:text-cyan-200 font-semibold transition-colors cursor-pointer text-left"
+                >
+                  Enviar Archivos / Documentos
+                </button>
               </li>
               <li>
                 <a href="#actualidad" className="hover:text-cyan-300 transition-colors">
@@ -114,10 +128,17 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs">
           <p>© {new Date().getFullYear()} Leader - Tax, Accounting & Business Consulting. Todos los derechos reservados.</p>
-          <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex flex-wrap items-center gap-4 text-slate-400">
             <span>Chincha - Perú</span>
             <span>·</span>
-            <span>Tu tranquilidad tributaria, nuestra prioridad</span>
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              className="text-slate-500 hover:text-cyan-400 text-[11px] inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Lock className="w-3 h-3 text-cyan-400/70" />
+              <span>Acceso Asesores Leader</span>
+            </button>
           </div>
         </div>
       </div>
