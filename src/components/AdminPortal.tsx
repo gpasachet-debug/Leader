@@ -49,7 +49,8 @@ import {
   DailyVideoData,
   DEFAULT_DAILY_VIDEO,
   getDailyVideoConfig,
-  saveDailyVideoConfig
+  saveDailyVideoConfig,
+  removeDailyVideo
 } from '../services/videoConfigService';
 
 interface AdminPortalProps {
@@ -139,10 +140,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
     }
   };
 
+  const [videoError, setVideoError] = useState<string>('');
+
   const handleSaveVideo = async (e: React.FormEvent) => {
     e.preventDefault();
+    setVideoError('');
     if (!videoTitle.trim()) {
-      alert('Por favor ingresa al menos un título para la cápsula o consejo.');
+      setVideoError('Por favor ingresa al menos un título para la cápsula o comunicado.');
       return;
     }
     setIsSavingVideo(true);
@@ -158,57 +162,53 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
       setVideoSaveSuccess(true);
       setVideoStatusMessage(
         (videoUrl || '').trim()
-          ? '¡Video publicado con éxito! Ya se visualiza con reproducción automática en la página principal.'
-          : '¡Guardado en modo Solo Texto! El recuadro del video desaparece y se muestra el comunicado oficial.'
+          ? '¡Video publicado con éxito! Se visualiza con reproducción automática en la página web.'
+          : '¡Guardado en Modo Solo Texto! El recuadro del video ha desaparecido y el texto ocupa todo el espacio.'
       );
       setTimeout(() => setVideoSaveSuccess(false), 5000);
     } catch (err) {
       console.error('Error saving video:', err);
-      alert('Hubo un error al guardar la configuración. Intenta nuevamente.');
+      setVideoError('Hubo un error al guardar en la nube. Intenta nuevamente.');
     } finally {
       setIsSavingVideo(false);
     }
   };
 
   const handleRemovePublishedVideo = async () => {
-    if (
-      !window.confirm(
-        '¿Deseas retirar el video publicado de la web? La página mantendrá el título y texto del consejo, pero el recuadro del video desaparecerá por completo.'
-      )
-    ) {
-      return;
-    }
     setIsSavingVideo(true);
+    setVideoError('');
+    setVideoSaveSuccess(false);
     try {
       setVideoUrl('');
       setLocalVideoFileName('');
-      await saveDailyVideoConfig({
-        title: videoTitle.trim() || DEFAULT_DAILY_VIDEO.title,
-        description: videoDescription.trim() || DEFAULT_DAILY_VIDEO.description,
-        category: videoCategory.trim() || DEFAULT_DAILY_VIDEO.category,
-        videoUrl: '',
-        updatedAt: new Date().toISOString(),
-      });
+      await removeDailyVideo();
       setVideoSaveSuccess(true);
       setVideoStatusMessage(
-        '¡Video retirado de la web! Ahora la sección muestra únicamente el comunicado en texto (el recuadro del video fue eliminado).'
+        '¡Video eliminado con éxito! En la página web el recuadro del video ha desaparecido y el texto se acomodó ocupando todo el espacio.'
       );
       setTimeout(() => setVideoSaveSuccess(false), 5000);
     } catch (err) {
       console.error('Error removing video:', err);
-      alert('No se pudo retirar el video. Intenta nuevamente.');
+      setVideoError('No se pudo retirar el video de la nube. Intenta nuevamente.');
     } finally {
       setIsSavingVideo(false);
     }
   };
 
-  const handleResetDefaultVideo = () => {
+  const handleResetDefaultVideo = async () => {
     setVideoTitle(DEFAULT_DAILY_VIDEO.title);
     setVideoDescription(DEFAULT_DAILY_VIDEO.description);
     setVideoCategory(DEFAULT_DAILY_VIDEO.category);
     setVideoUrl(DEFAULT_DAILY_VIDEO.videoUrl);
     setLocalVideoFileName('');
+    setVideoError('');
     setVideoSaveSuccess(false);
+    try {
+      await saveDailyVideoConfig(DEFAULT_DAILY_VIDEO);
+      setVideoSaveSuccess(true);
+      setVideoStatusMessage('¡Video original de la CTS restaurado con éxito en la portada!');
+      setTimeout(() => setVideoSaveSuccess(false), 4000);
+    } catch {}
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -868,6 +868,39 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                       </p>
                     </div>
 
+                    {/* Mode Selector */}
+                    <div className="bg-[#050C1B] p-1.5 rounded-2xl border border-slate-700/80 flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!videoUrl) setVideoUrl(DEFAULT_DAILY_VIDEO.videoUrl);
+                          setVideoError('');
+                          setVideoSaveSuccess(false);
+                        }}
+                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                          videoUrl
+                            ? 'bg-gradient-to-r from-cyan-500/25 to-blue-500/25 text-cyan-200 border border-cyan-400/50 shadow-md shadow-cyan-950/40'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Film className="w-4 h-4 text-cyan-400" />
+                        <span>Publicar con Video (9:16)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleRemovePublishedVideo}
+                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                          !videoUrl
+                            ? 'bg-gradient-to-r from-emerald-500/25 to-teal-500/25 text-emerald-200 border border-emerald-400/50 shadow-md shadow-emerald-950/40'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <FileText className="w-4 h-4 text-emerald-400" />
+                        <span>Publicar Solo Texto (Sin Video)</span>
+                      </button>
+                    </div>
+
                     <form onSubmit={handleSaveVideo} className="space-y-4">
                       {/* Video File / URL Input */}
                       <div>
@@ -880,10 +913,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                               type="button"
                               onClick={handleRemovePublishedVideo}
                               className="text-[11px] font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors cursor-pointer"
-                              title="Quitar video de la portada para mostrar solo texto"
+                              title="Borrar video de la portada para mostrar solo texto"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
-                              <span>Eliminar video (Modo Solo Texto)</span>
+                              <span>Borrar video</span>
                             </button>
                           ) : (
                             <span className="text-[10px] text-cyan-400 font-medium flex items-center gap-1">
@@ -925,7 +958,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                                 type="button"
                                 onClick={handleRemovePublishedVideo}
                                 className="p-1 hover:bg-rose-900/40 text-rose-400 rounded transition-colors ml-2 shrink-0 cursor-pointer"
-                                title="Eliminar video actual"
+                                title="Borrar video actual"
                               >
                                 <X className="w-3.5 h-3.5" />
                               </button>
@@ -934,7 +967,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                         </div>
 
                         {/* Text URL input */}
-                        <div className="relative">
+                        <div className="relative mb-2">
                           <input
                             type="text"
                             value={videoUrl}
@@ -947,11 +980,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
                           />
                         </div>
-                        <span className="text-[10px] text-slate-400 mt-1 block">
-                          {videoUrl
-                            ? 'El video se reproducirá automáticamente cuando el cliente pase por la sección.'
-                            : 'Si este campo queda vacío, el recuadro del video desaparecerá de la web y solo se mostrará el comunicado oficial en texto.'}
-                        </span>
+
+                        {/* Direct Delete Video Action Button */}
+                        {videoUrl ? (
+                          <button
+                            type="button"
+                            onClick={handleRemovePublishedVideo}
+                            className="w-full py-2.5 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/40 text-rose-300 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                            <span>Borrar Video Ahora (Publicar Solo Texto en la Web)</span>
+                          </button>
+                        ) : (
+                          <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 text-xs flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" />
+                            <span>Modo Solo Texto activo. El recuadro del video no se mostrará en la web.</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Video Title */}
@@ -1012,6 +1057,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500 resize-none"
                         />
                       </div>
+
+                      {/* Error banner */}
+                      {videoError && (
+                        <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-300 text-xs flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                          <span>{videoError}</span>
+                        </div>
+                      )}
 
                       {/* Feedback banner */}
                       {videoSaveSuccess && (

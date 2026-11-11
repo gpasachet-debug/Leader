@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import {
   Play,
   Pause,
@@ -8,13 +10,9 @@ import {
   Maximize2,
   MessageCircle,
   Calendar,
-  Tag,
   ShieldAlert,
-  Clock,
   CheckCircle2,
-  FileText,
-  AlertTriangle,
-  Sparkles
+  FileText
 } from 'lucide-react';
 import {
   DailyVideoData,
@@ -23,26 +21,46 @@ import {
 } from '../services/videoConfigService';
 
 export const DailyVideoSection: React.FC = () => {
-  const [videoData, setVideoData] = useState<DailyVideoData>(DEFAULT_DAILY_VIDEO);
+  // Synchronous initialization from localStorage prevents flash of default video when deleted
+  const [videoData, setVideoData] = useState<DailyVideoData>(() => {
+    try {
+      const local = localStorage.getItem('leader_daily_video_config');
+      if (local) {
+        const parsed = JSON.parse(local);
+        return {
+          title: parsed.title ?? DEFAULT_DAILY_VIDEO.title,
+          description: parsed.description ?? DEFAULT_DAILY_VIDEO.description,
+          category: parsed.category ?? DEFAULT_DAILY_VIDEO.category,
+          videoUrl: typeof parsed.videoUrl === 'string' ? parsed.videoUrl.trim() : DEFAULT_DAILY_VIDEO.videoUrl,
+          dateFormatted: parsed.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
+          updatedAt: parsed.updatedAt ?? DEFAULT_DAILY_VIDEO.updatedAt,
+        };
+      }
+    } catch {}
+    return DEFAULT_DAILY_VIDEO;
+  });
+
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [isMuted, setIsMuted] = useState<boolean>(true); // start muted so browser allows seamless autoplay
+  const [isMuted, setIsMuted] = useState<boolean>(true); // start muted for friendly autoplay
   const [progress, setProgress] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
-  const [userInteractedSound, setUserInteractedSound] = useState<boolean>(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Check whether a valid video URL is present
+  // Check whether a video is actively published
   const hasVideo = Boolean(videoData.videoUrl && videoData.videoUrl.trim().length > 0);
 
-  // Load configuration on mount and listen for real-time updates from Admin Portal
+  // Synchronize configuration from both Firestore and local events
   useEffect(() => {
     let isMounted = true;
+
+    // Initial async fetch from Firestore
     getDailyVideoConfig().then((data) => {
       if (isMounted) setVideoData(data);
     });
 
+    // 1. Reactive in-app window event (instant 0ms update when saving in Admin Portal)
     const handleUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<DailyVideoData>;
       if (customEvent.detail) {
@@ -52,15 +70,42 @@ export const DailyVideoSection: React.FC = () => {
         }
       }
     };
-
     window.addEventListener('leader_daily_video_updated', handleUpdate);
+
+    // 2. Real-time Firestore document listener across all sessions
+    let unsubscribeFirestore: (() => void) | undefined;
+    try {
+      const docRef = doc(db, 'site_config', 'daily_video');
+      unsubscribeFirestore = onSnapshot(docRef, (snap) => {
+        if (!isMounted) return;
+        if (snap.exists()) {
+          const data = snap.data() as Partial<DailyVideoData>;
+          const clean: DailyVideoData = {
+            title: data.title ?? DEFAULT_DAILY_VIDEO.title,
+            description: data.description ?? DEFAULT_DAILY_VIDEO.description,
+            category: data.category ?? DEFAULT_DAILY_VIDEO.category,
+            videoUrl: typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '',
+            dateFormatted: data.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
+            updatedAt: data.updatedAt ?? new Date().toISOString(),
+          };
+          setVideoData(clean);
+          try {
+            localStorage.setItem('leader_daily_video_config', JSON.stringify(clean));
+          } catch {}
+        }
+      });
+    } catch (err) {
+      console.warn('Could not attach Firestore onSnapshot for daily video:', err);
+    }
+
     return () => {
       isMounted = false;
       window.removeEventListener('leader_daily_video_updated', handleUpdate);
+      if (unsubscribeFirestore) unsubscribeFirestore();
     };
   }, []);
 
-  // Requirement 1: Autoplay automatically once the user scrolls into view
+  // Autoplay automatically once the user scrolls into view
   useEffect(() => {
     if (!hasVideo || !videoRef.current) return;
     const videoElement = videoRef.current;
@@ -69,8 +114,6 @@ export const DailyVideoSection: React.FC = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // User reached the section -> Autoplay immediately
-            // Ensure muted is true so modern browsers permit automatic play
             videoElement.muted = isMuted;
             const playPromise = videoElement.play();
             if (playPromise !== undefined) {
@@ -79,7 +122,6 @@ export const DailyVideoSection: React.FC = () => {
                   setIsPlaying(true);
                 })
                 .catch((err) => {
-                  // Autoplay with audio was blocked or interrupted
                   console.log('Autoplay muted attempt:', err);
                   videoElement.muted = true;
                   setIsMuted(true);
@@ -87,14 +129,13 @@ export const DailyVideoSection: React.FC = () => {
                 });
             }
           } else {
-            // User scrolled away -> pause video to conserve resources
             videoElement.pause();
             setIsPlaying(false);
           }
         });
       },
       {
-        threshold: 0.3, // Trigger when 30% of the video or section is visible
+        threshold: 0.3,
       }
     );
 
@@ -126,7 +167,6 @@ export const DailyVideoSection: React.FC = () => {
     const nextMuted = !isMuted;
     videoRef.current.muted = nextMuted;
     setIsMuted(nextMuted);
-    setUserInteractedSound(true);
   };
 
   const handleTimeUpdate = () => {
@@ -165,9 +205,9 @@ export const DailyVideoSection: React.FC = () => {
     <section
       id="video-del-dia"
       ref={sectionRef}
-      className="py-16 sm:py-20 relative overflow-hidden bg-gradient-to-b from-[#060E1E] via-[#081734] to-[#060E1E]"
+      className="py-14 sm:py-20 relative overflow-hidden bg-gradient-to-b from-[#060E1E] via-[#081734] to-[#060E1E]"
     >
-      {/* Ambient Background Glow */}
+      {/* Ambient Glow */}
       <div className="absolute top-1/2 right-1/4 w-[35rem] h-[35rem] bg-cyan-600/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
       <div className="absolute bottom-10 left-10 w-[25rem] h-[25rem] bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -177,7 +217,7 @@ export const DailyVideoSection: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-bold uppercase tracking-wider mb-3 shadow-md">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            {hasVideo ? 'Cápsula Informativa en Video' : 'Comunicado & Consejo Tributario'}
+            {hasVideo ? 'Cápsula Informativa en Video' : 'Actualidad & Consejo Tributario'}
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
             Actualidad y Consejos <span className="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">del Día</span>
@@ -188,9 +228,9 @@ export const DailyVideoSection: React.FC = () => {
         </div>
 
         {/* 
-          Conditional Rendering:
-          Case A: HAS VIDEO -> 2-column layout with vertical reel player on left and information on right
-          Case B: NO VIDEO -> Video container completely disappears, rendering a centered wide advisory card
+          Conditional Presentation:
+          Case 1 (hasVideo): 2 Columns (Vertical reel player on left + text on right)
+          Case 2 (!hasVideo): Video box completely disappears, text expands and replaces the entire space!
         */}
         {hasVideo ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
@@ -199,7 +239,7 @@ export const DailyVideoSection: React.FC = () => {
             <div className="lg:col-span-5 flex justify-center">
               <div className="relative w-full max-w-[310px] sm:max-w-[340px] aspect-[9/16] rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/60 group">
                 
-                {/* Actual Video Element with Autoplay support */}
+                {/* Video Element */}
                 <video
                   ref={videoRef}
                   src={videoData.videoUrl}
@@ -214,7 +254,7 @@ export const DailyVideoSection: React.FC = () => {
                   poster="/assets/images/business_growth_meeting_1794215306152.jpg"
                 />
 
-                {/* Big Play Overlay if paused */}
+                {/* Big Play Overlay when paused */}
                 {!isPlaying && (
                   <div
                     onClick={togglePlay}
@@ -231,18 +271,6 @@ export const DailyVideoSection: React.FC = () => {
                       Reproducir Video
                     </span>
                   </div>
-                )}
-
-                {/* Sound Prompt notification if autoplaying muted */}
-                {isPlaying && isMuted && !userInteractedSound && (
-                  <button
-                    type="button"
-                    onClick={toggleMute}
-                    className="absolute top-14 inset-x-4 py-2 px-3 rounded-xl bg-black/75 backdrop-blur-md border border-cyan-400/50 text-white text-[11px] font-semibold flex items-center justify-center gap-2 shadow-lg animate-bounce cursor-pointer z-20"
-                  >
-                    <VolumeX className="w-4 h-4 text-cyan-300" />
-                    <span>Reproducción automática. Toca para activar audio</span>
-                  </button>
                 )}
 
                 {/* Top Video Badges */}
@@ -338,8 +366,8 @@ export const DailyVideoSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              {/* Action Button */}
+              <div className="pt-2">
                 <a
                   href={`https://wa.me/51913150524?text=${encodeURIComponent(
                     `Hola Jorge Pasache / Leader, vi la cápsula sobre "${videoData.title}" y necesito orientación para mi empresa.`
@@ -351,15 +379,6 @@ export const DailyVideoSection: React.FC = () => {
                   <MessageCircle className="w-4 h-4" />
                   <span>Consultar por WhatsApp sobre este tema</span>
                 </a>
-
-                <button
-                  type="button"
-                  onClick={toggleMute}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
-                >
-                  {isMuted ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-rose-400" />}
-                  <span>{isMuted ? 'Escuchar con Audio' : 'Silenciar'}</span>
-                </button>
               </div>
 
               {/* Advisor attribution */}
@@ -372,69 +391,83 @@ export const DailyVideoSection: React.FC = () => {
 
           </div>
         ) : (
-          /* Case B: NO VIDEO -> The video box disappears completely, showing a clean, wide advisory card */
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-b from-[#091834] via-[#071329] to-[#040C1A] border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl shadow-cyan-950/50 relative overflow-hidden">
+          /* Case 2: NO VIDEO -> Video box is completely gone! Text expands and replaces the space */
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-gradient-to-b from-[#091834] via-[#071329] to-[#040C1A] border-2 border-cyan-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl shadow-cyan-950/50 relative overflow-hidden space-y-6">
               
-              {/* Background ambient badge */}
-              <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
+              {/* Ambient Glow */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
 
               {/* Top metadata tags */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-800">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800 relative z-10">
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 rounded-full bg-cyan-950 border border-cyan-400/40 text-xs font-bold text-cyan-300 uppercase tracking-wide">
-                    {videoData.category || 'Consejo Tributario'}
+                  <span className="px-3.5 py-1 rounded-full bg-cyan-950 border border-cyan-400/40 text-xs font-bold text-cyan-300 uppercase tracking-wide shadow-sm">
+                    {videoData.category || 'Actualidad & Normativa'}
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
+                  <span className="px-3.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/30 text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
                     <ShieldAlert className="w-3.5 h-3.5" />
-                    Alerta Vigente
+                    Alerta Tributaria & Laboral Vigente
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
                   <Calendar className="w-4 h-4 text-slate-500" />
-                  <span>{videoData.dateFormatted || 'Actualidad'}</span>
+                  <span>{videoData.dateFormatted || 'Noviembre 2026'}</span>
                 </div>
               </div>
 
-              {/* Main Headline */}
-              <h3 className="text-xl sm:text-3xl font-extrabold text-white leading-snug tracking-tight mb-4">
-                {videoData.title}
-              </h3>
-
-              {/* Advisory Body Text */}
-              <div className="text-sm sm:text-base text-slate-200 leading-relaxed bg-[#061022] p-5 sm:p-7 rounded-2xl border border-slate-800 shadow-inner mb-6 whitespace-pre-line">
-                {videoData.description}
+              {/* Main Headline - Expands boldly across the space */}
+              <div className="relative z-10">
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight tracking-tight">
+                  {videoData.title}
+                </h3>
               </div>
 
-              {/* Takeaways Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-                <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
+              {/* Advisory Body Text - Replaces the space where the video was */}
+              <div className="relative z-10 bg-[#061022]/90 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-inner">
+                <p className="text-sm sm:text-base md:text-lg text-slate-200 leading-relaxed font-normal whitespace-pre-line">
+                  {videoData.description}
+                </p>
+              </div>
+
+              {/* 3-Column Highlights Grid replacing the layout space */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
                   <div>
-                    <h5 className="font-bold text-white text-sm">Asesoramiento Preventivo</h5>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Revisamos tu documentación contable y laboral antes de cualquier fiscalización.
+                    <h5 className="font-bold text-white text-xs sm:text-sm">Cálculo & Declaración Exacta</h5>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                      Determinación según normativa SUNAT y leyes laborales vigentes.
                     </p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <h5 className="font-bold text-white text-sm">Respaldo Profesional Inmediato</h5>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Consultas directas con Jorge Pasache y el equipo tributario de Leader.
+                    <h5 className="font-bold text-white text-xs sm:text-sm">Protección Contra Multas</h5>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                      Evita contingencias y sanciones tributarias ante SUNAT y SUNAFIL.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h5 className="font-bold text-white text-xs sm:text-sm">Respaldo Profesional Directo</h5>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                      Asesoría personalizada con Jorge Pasache y el equipo de Leader.
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Footer CTA & Attribution */}
-              <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Bottom Actions Row */}
+              <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
                 <div className="flex items-center gap-2.5 text-xs text-slate-400">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
-                  <span>Publicación oficial de <strong>Leader Consultores</strong> (Chincha, Ica, Perú).</span>
+                  <span>Orientación verificada por <strong>Jorge Pasache</strong> - Leader Consultores (Chincha, Perú).</span>
                 </div>
 
                 <a
@@ -443,7 +476,7 @@ export const DailyVideoSection: React.FC = () => {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs sm:text-sm shadow-xl shadow-emerald-950/60 border border-emerald-400/40 transition-all hover:scale-102 cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs sm:text-sm shadow-xl shadow-emerald-950/60 border border-emerald-400/40 transition-all hover:scale-102 cursor-pointer text-center"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Consultar por WhatsApp sobre este tema</span>
