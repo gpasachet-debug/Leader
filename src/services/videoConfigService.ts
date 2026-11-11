@@ -33,12 +33,12 @@ export async function getDailyVideoConfig(): Promise<DailyVideoData> {
     if (snap.exists()) {
       const data = snap.data() as Partial<DailyVideoData>;
       const merged: DailyVideoData = {
-        title: data.title || DEFAULT_DAILY_VIDEO.title,
-        description: data.description || DEFAULT_DAILY_VIDEO.description,
-        category: data.category || DEFAULT_DAILY_VIDEO.category,
-        videoUrl: data.videoUrl || DEFAULT_DAILY_VIDEO.videoUrl,
-        dateFormatted: data.dateFormatted || DEFAULT_DAILY_VIDEO.dateFormatted,
-        updatedAt: data.updatedAt || DEFAULT_DAILY_VIDEO.updatedAt,
+        title: data.title ?? DEFAULT_DAILY_VIDEO.title,
+        description: data.description ?? DEFAULT_DAILY_VIDEO.description,
+        category: data.category ?? DEFAULT_DAILY_VIDEO.category,
+        videoUrl: typeof data.videoUrl === 'string' ? data.videoUrl : DEFAULT_DAILY_VIDEO.videoUrl,
+        dateFormatted: data.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
+        updatedAt: data.updatedAt ?? DEFAULT_DAILY_VIDEO.updatedAt,
       };
       // Keep local storage updated
       try {
@@ -56,7 +56,15 @@ export async function getDailyVideoConfig(): Promise<DailyVideoData> {
   try {
     const local = localStorage.getItem(STORAGE_KEY);
     if (local) {
-      return JSON.parse(local);
+      const parsed = JSON.parse(local);
+      return {
+        title: parsed.title ?? DEFAULT_DAILY_VIDEO.title,
+        description: parsed.description ?? DEFAULT_DAILY_VIDEO.description,
+        category: parsed.category ?? DEFAULT_DAILY_VIDEO.category,
+        videoUrl: typeof parsed.videoUrl === 'string' ? parsed.videoUrl : DEFAULT_DAILY_VIDEO.videoUrl,
+        dateFormatted: parsed.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
+        updatedAt: parsed.updatedAt ?? DEFAULT_DAILY_VIDEO.updatedAt,
+      };
     }
   } catch {
     // ignore
@@ -68,12 +76,12 @@ export async function getDailyVideoConfig(): Promise<DailyVideoData> {
 /**
  * Saves a new daily video configuration to Firestore and notifies the app
  */
-export async function saveDailyVideoConfig(data: DailyVideoData): Promise<void> {
+export async function saveDailyVideoConfig(data: Partial<DailyVideoData>): Promise<void> {
   const cleanData: DailyVideoData = {
-    title: data.title.trim() || DEFAULT_DAILY_VIDEO.title,
-    description: data.description.trim() || DEFAULT_DAILY_VIDEO.description,
-    category: data.category.trim() || DEFAULT_DAILY_VIDEO.category,
-    videoUrl: data.videoUrl.trim() || DEFAULT_DAILY_VIDEO.videoUrl,
+    title: (data.title || DEFAULT_DAILY_VIDEO.title).trim(),
+    description: (data.description || DEFAULT_DAILY_VIDEO.description).trim(),
+    category: (data.category || DEFAULT_DAILY_VIDEO.category).trim(),
+    videoUrl: typeof data.videoUrl === 'string' ? data.videoUrl.trim() : DEFAULT_DAILY_VIDEO.videoUrl,
     dateFormatted: data.dateFormatted || new Date().toLocaleDateString('es-PE', { month: 'long', year: 'numeric' }),
     updatedAt: new Date().toISOString(),
   };
@@ -96,3 +104,16 @@ export async function saveDailyVideoConfig(data: DailyVideoData): Promise<void> 
   // Dispatch custom window event for instant reactive update across open views
   window.dispatchEvent(new CustomEvent('leader_daily_video_updated', { detail: cleanData }));
 }
+
+/**
+ * Removes the currently published video, leaving only the text announcement/advice
+ */
+export async function removeDailyVideo(): Promise<void> {
+  const current = await getDailyVideoConfig();
+  await saveDailyVideoConfig({
+    ...current,
+    videoUrl: '',
+    updatedAt: new Date().toISOString(),
+  });
+}
+

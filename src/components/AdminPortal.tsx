@@ -35,7 +35,8 @@ import {
   Play,
   Pause,
   Volume2,
-  VolumeX
+  VolumeX,
+  VideoOff
 } from 'lucide-react';
 import {
   StoredSubmission,
@@ -80,6 +81,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const [videoUrl, setVideoUrl] = useState<string>(DEFAULT_DAILY_VIDEO.videoUrl);
   const [isSavingVideo, setIsSavingVideo] = useState<boolean>(false);
   const [videoSaveSuccess, setVideoSaveSuccess] = useState<boolean>(false);
+  const [videoStatusMessage, setVideoStatusMessage] = useState<string>('');
   const [localVideoFileName, setLocalVideoFileName] = useState<string>('');
   const [previewPlaying, setPreviewPlaying] = useState<boolean>(false);
 
@@ -118,10 +120,10 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const loadVideoConfig = async () => {
     try {
       const config = await getDailyVideoConfig();
-      setVideoTitle(config.title);
-      setVideoDescription(config.description);
-      setVideoCategory(config.category);
-      setVideoUrl(config.videoUrl);
+      setVideoTitle(config.title || '');
+      setVideoDescription(config.description || '');
+      setVideoCategory(config.category || 'Actualidad');
+      setVideoUrl(config.videoUrl || '');
     } catch (err) {
       console.warn('Error fetching video config:', err);
     }
@@ -139,25 +141,62 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
 
   const handleSaveVideo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!videoUrl || !videoTitle.trim()) {
-      alert('Por favor ingresa un título y una URL o archivo de video válido.');
+    if (!videoTitle.trim()) {
+      alert('Por favor ingresa al menos un título para la cápsula o consejo.');
       return;
     }
     setIsSavingVideo(true);
     setVideoSaveSuccess(false);
     try {
       await saveDailyVideoConfig({
-        title: videoTitle,
-        description: videoDescription,
-        category: videoCategory,
-        videoUrl: videoUrl,
+        title: videoTitle.trim(),
+        description: videoDescription.trim(),
+        category: videoCategory.trim() || 'Actualidad',
+        videoUrl: (videoUrl || '').trim(),
         updatedAt: new Date().toISOString(),
       });
       setVideoSaveSuccess(true);
-      setTimeout(() => setVideoSaveSuccess(false), 4000);
+      setVideoStatusMessage(
+        (videoUrl || '').trim()
+          ? '¡Video publicado con éxito! Ya se visualiza con reproducción automática en la página principal.'
+          : '¡Guardado en modo Solo Texto! El recuadro del video desaparece y se muestra el comunicado oficial.'
+      );
+      setTimeout(() => setVideoSaveSuccess(false), 5000);
     } catch (err) {
       console.error('Error saving video:', err);
-      alert('Hubo un error al guardar el video. Intenta nuevamente.');
+      alert('Hubo un error al guardar la configuración. Intenta nuevamente.');
+    } finally {
+      setIsSavingVideo(false);
+    }
+  };
+
+  const handleRemovePublishedVideo = async () => {
+    if (
+      !window.confirm(
+        '¿Deseas retirar el video publicado de la web? La página mantendrá el título y texto del consejo, pero el recuadro del video desaparecerá por completo.'
+      )
+    ) {
+      return;
+    }
+    setIsSavingVideo(true);
+    try {
+      setVideoUrl('');
+      setLocalVideoFileName('');
+      await saveDailyVideoConfig({
+        title: videoTitle.trim() || DEFAULT_DAILY_VIDEO.title,
+        description: videoDescription.trim() || DEFAULT_DAILY_VIDEO.description,
+        category: videoCategory.trim() || DEFAULT_DAILY_VIDEO.category,
+        videoUrl: '',
+        updatedAt: new Date().toISOString(),
+      });
+      setVideoSaveSuccess(true);
+      setVideoStatusMessage(
+        '¡Video retirado de la web! Ahora la sección muestra únicamente el comunicado en texto (el recuadro del video fue eliminado).'
+      );
+      setTimeout(() => setVideoSaveSuccess(false), 5000);
+    } catch (err) {
+      console.error('Error removing video:', err);
+      alert('No se pudo retirar el video. Intenta nuevamente.');
     } finally {
       setIsSavingVideo(false);
     }
@@ -832,15 +871,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                     <form onSubmit={handleSaveVideo} className="space-y-4">
                       {/* Video File / URL Input */}
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
-                          1. Video (Subir Archivo o Ingresar Ruta) <span className="text-rose-400">*</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                            1. Video Informativo (Opcional)
+                          </label>
+                          {videoUrl ? (
+                            <button
+                              type="button"
+                              onClick={handleRemovePublishedVideo}
+                              className="text-[11px] font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors cursor-pointer"
+                              title="Quitar video de la portada para mostrar solo texto"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Eliminar video (Modo Solo Texto)</span>
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-cyan-400 font-medium flex items-center gap-1">
+                              <VideoOff className="w-3 h-3" />
+                              Modo Solo Texto Activo
+                            </span>
+                          )}
+                        </div>
 
                         {/* File Upload Button & Status */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
                           <label className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-cyan-500/50 hover:border-cyan-400 bg-cyan-950/30 hover:bg-cyan-950/60 text-cyan-300 text-xs font-semibold cursor-pointer transition-all">
                             <UploadCloud className="w-4 h-4 text-cyan-400" />
-                            <span>{localVideoFileName ? 'Cambiar archivo seleccionado' : 'Subir video (.mp4, .webm)'}</span>
+                            <span>{localVideoFileName ? 'Cambiar archivo seleccionado' : (videoUrl ? 'Cambiar video (.mp4, .webm)' : 'Subir un nuevo video (.mp4)')}</span>
                             <input
                               type="file"
                               accept="video/mp4,video/webm,video/quicktime"
@@ -849,11 +906,30 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                             />
                           </label>
 
-                          <div className="flex items-center p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 truncate">
-                            <Video className="w-4 h-4 text-slate-400 shrink-0 mr-2" />
-                            <span className="truncate">
-                              {localVideoFileName ? `Archivo: ${localVideoFileName}` : 'Video activo en portada'}
-                            </span>
+                          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 truncate">
+                            <div className="flex items-center truncate">
+                              {videoUrl ? (
+                                <Video className="w-4 h-4 text-emerald-400 shrink-0 mr-2" />
+                              ) : (
+                                <VideoOff className="w-4 h-4 text-slate-500 shrink-0 mr-2" />
+                              )}
+                              <span className="truncate">
+                                {localVideoFileName
+                                  ? `Archivo: ${localVideoFileName}`
+                                  : (videoUrl ? 'Video cargado activo' : 'Sin video (Solo texto)')}
+                              </span>
+                            </div>
+
+                            {videoUrl && (
+                              <button
+                                type="button"
+                                onClick={handleRemovePublishedVideo}
+                                className="p-1 hover:bg-rose-900/40 text-rose-400 rounded transition-colors ml-2 shrink-0 cursor-pointer"
+                                title="Eliminar video actual"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
 
@@ -867,19 +943,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                               setLocalVideoFileName('');
                               setVideoSaveSuccess(false);
                             }}
-                            placeholder="Ej: /assets/aistudio/... o https://..."
+                            placeholder="Ruta local (/assets/...) o enlace web, o déjalo vacío para solo texto"
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
                           />
                         </div>
-                        <span className="text-[10px] text-slate-500 mt-1 block">
-                          Tip: Puedes cargar un nuevo archivo directamente desde tu equipo o pegar una ruta de video.
+                        <span className="text-[10px] text-slate-400 mt-1 block">
+                          {videoUrl
+                            ? 'El video se reproducirá automáticamente cuando el cliente pase por la sección.'
+                            : 'Si este campo queda vacío, el recuadro del video desaparecerá de la web y solo se mostrará el comunicado oficial en texto.'}
                         </span>
                       </div>
 
                       {/* Video Title */}
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
-                          2. Título de la Cápsula <span className="text-rose-400">*</span>
+                          2. Título del Comunicado o Cápsula <span className="text-rose-400">*</span>
                         </label>
                         <input
                           type="text"
@@ -924,13 +1002,13 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                       {/* Video Description */}
                       <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
-                          4. Resumen / Puntos Clave para el Cliente
+                          4. Resumen / Texto Informativo para el Cliente
                         </label>
                         <textarea
                           rows={3}
                           value={videoDescription}
                           onChange={(e) => setVideoDescription(e.target.value)}
-                          placeholder="Indica las fechas límite, recomendaciones o sanciones que se mencionan en el video..."
+                          placeholder="Indica las fechas límite, recomendaciones o sanciones que se muestran en el comunicado..."
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500 resize-none"
                         />
                       </div>
@@ -939,19 +1017,33 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                       {videoSaveSuccess && (
                         <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
-                          <span>¡Video publicado con éxito! Ya se visualiza actualizado en la página principal.</span>
+                          <span>{videoStatusMessage || '¡Cambios guardados con éxito en la web!'}</span>
                         </div>
                       )}
 
                       {/* Action buttons */}
                       <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-800">
-                        <button
-                          type="button"
-                          onClick={handleResetDefaultVideo}
-                          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
-                        >
-                          Restaurar video original (CTS Noviembre)
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                          <button
+                            type="button"
+                            onClick={handleResetDefaultVideo}
+                            className="px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                            title="Restaurar el video oficial de la CTS"
+                          >
+                            Restaurar video original (CTS)
+                          </button>
+
+                          {videoUrl && (
+                            <button
+                              type="button"
+                              onClick={handleRemovePublishedVideo}
+                              className="px-3 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Quitar Video (Solo Texto)</span>
+                            </button>
+                          )}
+                        </div>
 
                         <button
                           type="submit"
@@ -965,30 +1057,58 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                     </form>
                   </div>
 
-                  {/* Right Column: Live Mobile Reel Preview */}
+                  {/* Right Column: Live Preview (Video or Text Mode) */}
                   <div className="lg:col-span-5 flex flex-col items-center">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
                       <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                      Previsualización en Vivo (Formato 9:16)
+                      {videoUrl ? 'Previsualización del Video (Formato 9:16)' : 'Previsualización: Modo Solo Texto'}
                     </span>
 
-                    <div className="relative w-full max-w-[270px] aspect-[9/16] rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/60">
-                      <video
-                        key={videoUrl}
-                        src={videoUrl}
-                        controls
-                        playsInline
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
-                        <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/40 text-[9px] font-bold text-cyan-300 uppercase">
-                          {videoCategory || 'Actualidad'}
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-[8px] font-bold text-emerald-300 border border-emerald-500/40">
-                          En Vivo
-                        </span>
+                    {videoUrl ? (
+                      <div className="relative w-full max-w-[270px] aspect-[9/16] rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/60">
+                        <video
+                          key={videoUrl}
+                          src={videoUrl}
+                          controls
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                          <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/40 text-[9px] font-bold text-cyan-300 uppercase">
+                            {videoCategory || 'Actualidad'}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-[8px] font-bold text-emerald-300 border border-emerald-500/40">
+                            En Vivo
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      /* Text-only preview */
+                      <div className="w-full max-w-[310px] rounded-3xl bg-[#061022] border-2 border-cyan-500/40 p-5 shadow-xl text-left space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2.5 py-1 rounded-full bg-cyan-950 border border-cyan-400/30 text-[10px] font-bold text-cyan-300 uppercase">
+                            {videoCategory || 'Actualidad'}
+                          </span>
+                          <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Solo Texto
+                          </span>
+                        </div>
+
+                        <h5 className="text-sm font-bold text-white line-clamp-2 leading-tight">
+                          {videoTitle}
+                        </h5>
+
+                        <div className="text-xs text-slate-300 bg-slate-900/80 p-3 rounded-xl border border-slate-800 line-clamp-5 leading-relaxed">
+                          {videoDescription || 'Sin descripción ingresada.'}
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-[10px] text-cyan-300 flex items-center gap-2">
+                          <VideoOff className="w-4 h-4 text-cyan-400 shrink-0" />
+                          <span>El recuadro de video desaparecerá en la web pública.</span>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="mt-3 text-center max-w-[270px]">
                       <p className="text-xs font-bold text-white truncate">{videoTitle}</p>

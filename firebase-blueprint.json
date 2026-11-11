@@ -103,7 +103,7 @@
           "description": "Fecha y hora de última publicación"
         }
       },
-      "required": ["title", "videoUrl"]
+      "required": ["title"]
     }
   },
   "firestore": {
