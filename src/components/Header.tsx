@@ -28,6 +28,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenUpload }) => {
   }, []);
 
   const navLinks = [
+    { label: 'Cápsula Diaria', href: '#video-del-dia' },
     { label: 'Servicios', href: '#servicios' },
     { label: 'Vencimientos', href: '#vencimientos' },
     { label: 'Beneficios', href: '#beneficios' },

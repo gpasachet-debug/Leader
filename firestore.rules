@@ -25,5 +25,10 @@ service cloud.firestore {
         allow list: if isValidId(submissionId);
       }
     }
+
+    match /site_config/{configId} {
+      allow read: if true;
+      allow create, update, delete: if isValidId(configId);
+    }
   }
 }

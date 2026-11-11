@@ -76,6 +76,34 @@
         }
       },
       "required": ["fileIndex", "chunkIndex", "totalChunks", "data"]
+    },
+    "DailyVideoConfig": {
+      "title": "DailyVideoConfig",
+      "description": "Configuración del video informativo diario o cápsula de actualidad de Leader",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Título de la cápsula informativa"
+        },
+        "description": {
+          "type": "string",
+          "description": "Resumen o indicaciones de la cápsula"
+        },
+        "category": {
+          "type": "string",
+          "description": "Categoría temática (ej. Laboral, Tributario, SIRE, CTS)"
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "Ruta local o URL pública del video a reproducir"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Fecha y hora de última publicación"
+        }
+      },
+      "required": ["title", "videoUrl"]
     }
   },
   "firestore": {
@@ -90,6 +118,12 @@
         "$ref": "#/entities/FileChunk"
       },
       "description": "Fragmentos de archivos binarios (PDF, XML, Excel, Word) para descarga confiable"
+    },
+    "/site_config/{configId}": {
+      "schema": {
+        "$ref": "#/entities/DailyVideoConfig"
+      },
+      "description": "Configuraciones globales dinámicas del sitio como la cápsula de video diaria"
     }
   }
 }

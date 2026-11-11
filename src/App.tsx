@@ -16,6 +16,7 @@ import { SunatAlertSection } from './components/SunatAlertSection';
 import { ConsultationForm } from './components/ConsultationForm';
 import { Footer } from './components/Footer';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { DailyVideoSection } from './components/DailyVideoSection';
 import { ClientDocumentUpload } from './components/ClientDocumentUpload';
 import { FloatingUploadButton } from './components/FloatingUploadButton';
 import { AdminPortal } from './components/AdminPortal';
@@ -53,6 +54,9 @@ export default function App() {
 
         {/* 4 Pillars Strip */}
         <StatsStrip />
+
+        {/* Daily Video Update Section (Cápsula Informativa Diaria Leader) */}
+        <DailyVideoSection />
 
         {/* 6 Core Services */}
         <ServicesSection />

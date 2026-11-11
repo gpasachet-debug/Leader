@@ -57,6 +57,26 @@ function sanitizePath(str: string): string {
   return str.replace(/[^a-zA-Z0-9_\-.]/g, '_');
 }
 
+// Helper to recursively remove undefined properties so Firestore never throws unsupported field value: undefined
+function sanitizeForFirestore<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return null as any;
+  }
+  if (Array.isArray(data)) {
+    return data.map((item) => sanitizeForFirestore(item)) as any;
+  }
+  if (typeof data === 'object') {
+    const cleanObj: Record<string, any> = {};
+    for (const [key, val] of Object.entries(data as Record<string, any>)) {
+      if (val !== undefined) {
+        cleanObj[key] = sanitizeForFirestore(val);
+      }
+    }
+    return cleanObj as T;
+  }
+  return data;
+}
+
 // Convert File to full Base64 Data URL
 function readFileAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -160,15 +180,17 @@ export async function uploadClientDocuments(
       }
     }
 
-    savedFiles.push({
+    const fileItem: SavedFileItem = {
       name: file.name,
       size: file.size,
       extension: file.extension,
       type: file.type || 'application/octet-stream',
       chunksCount: totalChunks,
-      // For small files under 300KB, also embed as direct backup
-      dataBase64: file.size <= 300 * 1024 ? dataUrl : undefined,
-    });
+    };
+    if (file.size <= 300 * 1024 && dataUrl) {
+      fileItem.dataBase64 = dataUrl;
+    }
+    savedFiles.push(fileItem);
   }
 
   if (onProgress) onProgress(95);
@@ -178,21 +200,22 @@ export async function uploadClientDocuments(
     ticketId,
     date: dateFormatted,
     ruc: cleanRuc,
-    businessName: payload.businessName.trim() || 'No especificada',
+    businessName: payload.businessName?.trim() || 'No especificada',
     phone: payload.phone?.trim() || '',
-    taxPeriod: payload.taxPeriod,
-    docCategories: payload.docCategories,
-    notes: payload.notes.trim(),
+    taxPeriod: payload.taxPeriod || '',
+    docCategories: Array.isArray(payload.docCategories) ? payload.docCategories : [],
+    notes: payload.notes?.trim() || '',
     createdAt: now.toISOString(),
     status: 'pendiente',
     files: savedFiles,
     totalSize: totalAllBytes,
   };
 
-  // Step 3: Save master submission document to Firestore
+  // Step 3: Save master submission document to Firestore (strictly sanitized to avoid undefined values)
   try {
     const docRef = doc(db, SUBMISSIONS_COLLECTION, ticketId);
-    await setDoc(docRef, submissionDoc);
+    const cleanedDoc = sanitizeForFirestore(submissionDoc);
+    await setDoc(docRef, cleanedDoc);
   } catch (firestoreErr) {
     console.error('Firestore save error:', firestoreErr);
     // If offline, save in browser localStorage as resilient backup

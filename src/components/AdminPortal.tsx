@@ -25,7 +25,17 @@ import {
   Database,
   Eye,
   LogOut,
-  FolderDown
+  FolderDown,
+  Film,
+  Video,
+  UploadCloud,
+  Save,
+  Sparkles,
+  Check,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import {
   StoredSubmission,
@@ -34,6 +44,12 @@ import {
   deleteSubmission,
   downloadStoredFile
 } from '../services/submissionsService';
+import {
+  DailyVideoData,
+  DEFAULT_DAILY_VIDEO,
+  getDailyVideoConfig,
+  saveDailyVideoConfig
+} from '../services/videoConfigService';
 
 interface AdminPortalProps {
   isOpen: boolean;
@@ -54,6 +70,19 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const [periodFilter, setPeriodFilter] = useState<string>('todos');
   const [selectedSubmission, setSelectedSubmission] = useState<StoredSubmission | null>(null);
 
+  // Tab switcher: 'documents' or 'video'
+  const [activeTab, setActiveTab] = useState<'documents' | 'video'>('documents');
+
+  // Video Management Studio state
+  const [videoTitle, setVideoTitle] = useState<string>(DEFAULT_DAILY_VIDEO.title);
+  const [videoDescription, setVideoDescription] = useState<string>(DEFAULT_DAILY_VIDEO.description);
+  const [videoCategory, setVideoCategory] = useState<string>(DEFAULT_DAILY_VIDEO.category);
+  const [videoUrl, setVideoUrl] = useState<string>(DEFAULT_DAILY_VIDEO.videoUrl);
+  const [isSavingVideo, setIsSavingVideo] = useState<boolean>(false);
+  const [videoSaveSuccess, setVideoSaveSuccess] = useState<boolean>(false);
+  const [localVideoFileName, setLocalVideoFileName] = useState<string>('');
+  const [previewPlaying, setPreviewPlaying] = useState<boolean>(false);
+
   // Check session storage for admin login
   useEffect(() => {
     const savedAuth = sessionStorage.getItem('leader_admin_logged');
@@ -62,10 +91,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
     }
   }, []);
 
-  // Fetch submissions when opened and authenticated
+  // Fetch submissions and video config when opened and authenticated
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadData();
+      loadVideoConfig();
     }
   }, [isOpen, isAuthenticated]);
 
@@ -83,6 +113,63 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadVideoConfig = async () => {
+    try {
+      const config = await getDailyVideoConfig();
+      setVideoTitle(config.title);
+      setVideoDescription(config.description);
+      setVideoCategory(config.category);
+      setVideoUrl(config.videoUrl);
+    } catch (err) {
+      console.warn('Error fetching video config:', err);
+    }
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setVideoUrl(objectUrl);
+      setLocalVideoFileName(file.name);
+      setVideoSaveSuccess(false);
+    }
+  };
+
+  const handleSaveVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!videoUrl || !videoTitle.trim()) {
+      alert('Por favor ingresa un título y una URL o archivo de video válido.');
+      return;
+    }
+    setIsSavingVideo(true);
+    setVideoSaveSuccess(false);
+    try {
+      await saveDailyVideoConfig({
+        title: videoTitle,
+        description: videoDescription,
+        category: videoCategory,
+        videoUrl: videoUrl,
+        updatedAt: new Date().toISOString(),
+      });
+      setVideoSaveSuccess(true);
+      setTimeout(() => setVideoSaveSuccess(false), 4000);
+    } catch (err) {
+      console.error('Error saving video:', err);
+      alert('Hubo un error al guardar el video. Intenta nuevamente.');
+    } finally {
+      setIsSavingVideo(false);
+    }
+  };
+
+  const handleResetDefaultVideo = () => {
+    setVideoTitle(DEFAULT_DAILY_VIDEO.title);
+    setVideoDescription(DEFAULT_DAILY_VIDEO.description);
+    setVideoCategory(DEFAULT_DAILY_VIDEO.category);
+    setVideoUrl(DEFAULT_DAILY_VIDEO.videoUrl);
+    setLocalVideoFileName('');
+    setVideoSaveSuccess(false);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -336,6 +423,38 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
           /* Logged In Dashboard */
           <div className="flex-1 flex flex-col min-h-0 pt-4 space-y-4 overflow-hidden">
             
+            {/* Top Navigation Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveTab('documents')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeTab === 'documents'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-400/50 shadow-md shadow-cyan-950/40'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                }`}
+              >
+                <Database className="w-4 h-4" />
+                <span>Recepción de Documentos ({submissions.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('video')}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeTab === 'video'
+                    ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-400/50 shadow-md shadow-emerald-950/40'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                }`}
+              >
+                <Film className="w-4 h-4 text-emerald-400" />
+                <span>Video del Día / Cápsula Informativa</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+            </div>
+
+            {activeTab === 'documents' ? (
+              <>
             {/* Top Stat Pills */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
               <div className="p-3 rounded-2xl bg-[#08152E] border border-slate-800 flex items-center justify-between">
@@ -677,20 +796,209 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                         Eliminar Registro
                       </button>
                     </div>
-
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500">
-                    <Eye className="w-10 h-10 mb-2 opacity-50 text-cyan-400" />
-                    <p className="text-sm text-slate-300 font-semibold">Selecciona un envío de la lista</p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Podrás ver todos los comprobantes, descargarlos en tu computadora y gestionar el estado de la declaración.
+                    <FileText className="w-12 h-12 text-slate-600 mb-2 stroke-[1.5]" />
+                    <p className="text-sm font-medium text-slate-400">Selecciona un envío para ver sus detalles</p>
+                    <p className="text-xs text-slate-600 mt-1 max-w-xs">
+                      Haz clic en cualquier cliente de la lista izquierda para revisar sus comprobantes e indicaciones.
                     </p>
                   </div>
                 )}
               </div>
 
             </div>
+            </>
+            ) : (
+              /* Tab 2: Video Management Studio */
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-1 sm:p-2">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                  
+                  {/* Left Column: Form & Controls */}
+                  <div className="lg:col-span-7 space-y-4 bg-[#061022] p-5 sm:p-6 rounded-2xl border border-slate-800">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <h4 className="text-base sm:text-lg font-bold text-white">
+                          Gestión de la Cápsula en Video del Día
+                        </h4>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        Actualiza fácilmente el video informativo diario de Leader. Los cambios se sincronizan en la nube y se visualizan al instante en la página web.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleSaveVideo} className="space-y-4">
+                      {/* Video File / URL Input */}
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+                          1. Video (Subir Archivo o Ingresar Ruta) <span className="text-rose-400">*</span>
+                        </label>
+
+                        {/* File Upload Button & Status */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+                          <label className="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-cyan-500/50 hover:border-cyan-400 bg-cyan-950/30 hover:bg-cyan-950/60 text-cyan-300 text-xs font-semibold cursor-pointer transition-all">
+                            <UploadCloud className="w-4 h-4 text-cyan-400" />
+                            <span>{localVideoFileName ? 'Cambiar archivo seleccionado' : 'Subir video (.mp4, .webm)'}</span>
+                            <input
+                              type="file"
+                              accept="video/mp4,video/webm,video/quicktime"
+                              onChange={handleVideoFileChange}
+                              className="hidden"
+                            />
+                          </label>
+
+                          <div className="flex items-center p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300 truncate">
+                            <Video className="w-4 h-4 text-slate-400 shrink-0 mr-2" />
+                            <span className="truncate">
+                              {localVideoFileName ? `Archivo: ${localVideoFileName}` : 'Video activo en portada'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Text URL input */}
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={videoUrl}
+                            onChange={(e) => {
+                              setVideoUrl(e.target.value);
+                              setLocalVideoFileName('');
+                              setVideoSaveSuccess(false);
+                            }}
+                            placeholder="Ej: /assets/aistudio/... o https://..."
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-500 mt-1 block">
+                          Tip: Puedes cargar un nuevo archivo directamente desde tu equipo o pegar una ruta de video.
+                        </span>
+                      </div>
+
+                      {/* Video Title */}
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+                          2. Título de la Cápsula <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={videoTitle}
+                          onChange={(e) => setVideoTitle(e.target.value)}
+                          placeholder="Ej: Depósito de la CTS Noviembre 2026: Plazos y Multas SUNAFIL"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs sm:text-sm font-semibold focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
+                          required
+                        />
+                      </div>
+
+                      {/* Video Category & Quick Presets */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                            3. Categoría / Tema
+                          </label>
+                          <span className="text-[10px] text-slate-400">Atajos rápidos:</span>
+                        </div>
+                        <input
+                          type="text"
+                          value={videoCategory}
+                          onChange={(e) => setVideoCategory(e.target.value)}
+                          placeholder="Ej: Laboral & Planillas, SUNAT, Vencimientos"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-400 mb-2"
+                        />
+                        {/* Quick category badges */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {['Laboral & Planillas', 'Vencimientos SUNAT', 'Alerta SUNAFIL', 'SIRE & Facturación', 'Régimen MYPE'].map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setVideoCategory(cat)}
+                              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] text-cyan-300 border border-slate-700 transition-colors cursor-pointer"
+                            >
+                              + {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Video Description */}
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+                          4. Resumen / Puntos Clave para el Cliente
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={videoDescription}
+                          onChange={(e) => setVideoDescription(e.target.value)}
+                          placeholder="Indica las fechas límite, recomendaciones o sanciones que se mencionan en el video..."
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500 resize-none"
+                        />
+                      </div>
+
+                      {/* Feedback banner */}
+                      {videoSaveSuccess && (
+                        <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+                          <span>¡Video publicado con éxito! Ya se visualiza actualizado en la página principal.</span>
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-800">
+                        <button
+                          type="button"
+                          onClick={handleResetDefaultVideo}
+                          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+                        >
+                          Restaurar video original (CTS Noviembre)
+                        </button>
+
+                        <button
+                          type="submit"
+                          disabled={isSavingVideo}
+                          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <Save className="w-4 h-4" />
+                          {isSavingVideo ? 'Publicando...' : 'Guardar y Publicar en la Web'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Right Column: Live Mobile Reel Preview */}
+                  <div className="lg:col-span-5 flex flex-col items-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                      Previsualización en Vivo (Formato 9:16)
+                    </span>
+
+                    <div className="relative w-full max-w-[270px] aspect-[9/16] rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/60">
+                      <video
+                        key={videoUrl}
+                        src={videoUrl}
+                        controls
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                        <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/40 text-[9px] font-bold text-cyan-300 uppercase">
+                          {videoCategory || 'Actualidad'}
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-950/80 text-[8px] font-bold text-emerald-300 border border-emerald-500/40">
+                          En Vivo
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 text-center max-w-[270px]">
+                      <p className="text-xs font-bold text-white truncate">{videoTitle}</p>
+                      <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{videoDescription}</p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            )}
 
           </div>
         )}
