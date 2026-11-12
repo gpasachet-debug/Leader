@@ -102,92 +102,75 @@ export const RucCalendarTool: React.FC = () => {
   };
 
   return (
-    <section id="vencimientos" className="py-20 relative overflow-hidden bg-gradient-to-b from-[#081226] via-[#0B1A38] to-[#081226]">
+    <section id="vencimientos" className="py-10 sm:py-14 relative overflow-hidden bg-gradient-to-b from-[#081226] via-[#0B1A38] to-[#081226]">
       {/* Background ambient light */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[45rem] h-[30rem] bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[22rem] bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Campaign Header */}
+        {/* Campaign Header - Compact */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-3xl mx-auto mb-12"
+          transition={{ duration: 0.4 }}
+          className="text-center max-w-3xl mx-auto mb-6 sm:mb-8"
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider mb-4">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            ¡Cronograma Oficial SUNAT Ejercicio 2026!
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-400/30 text-amber-300 text-[11px] font-bold uppercase tracking-wider mb-2">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            Cronograma Oficial SUNAT 2026
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Continúan los Vencimientos Tributarios SUNAT
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Vencimientos Tributarios Mensuales
           </h2>
 
-          <p className="mt-4 text-base sm:text-lg text-slate-300 leading-relaxed text-balance">
-            Fechas oficiales que se renuevan mensualmente para el cumplimiento de obligaciones tributarias. Selecciona tu periodo y el último dígito de tu RUC.
+          <p className="mt-1.5 text-xs sm:text-sm text-slate-300 leading-relaxed text-balance">
+            Consulta la fecha límite exacta según el último dígito de tu RUC y periodo tributario.
           </p>
         </motion.div>
 
-        {/* 2-Column Interactive Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* 2-Column Compact Interactive Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start max-w-6xl mx-auto">
           
           {/* Left Column: Interactive RUC Digit Selector */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -15 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-7 p-6 sm:p-8 rounded-3xl bg-[#0F2247] border border-cyan-500/30 shadow-2xl shadow-black/40"
+            transition={{ duration: 0.4 }}
+            className="lg:col-span-7 p-4 sm:p-5 rounded-2xl bg-[#0D1F42] border border-cyan-500/30 shadow-xl shadow-black/40 flex flex-col gap-3.5"
           >
-            {/* Top Bar with Period Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-700/60">
+            {/* Top Bar: Title & Integrated Period Switcher */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-slate-700/60">
               <div>
-                <span className="text-xs uppercase font-bold tracking-wider text-cyan-300 block">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-300 block">
                   Simulador de Calendario
                 </span>
-                <h3 className="text-xl font-extrabold text-white mt-0.5">
-                  ¿Cuál es el último dígito de tu RUC?
+                <h3 className="text-base sm:text-lg font-extrabold text-white leading-tight">
+                  Último dígito de tu RUC
                 </h3>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsFullTableModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 text-xs font-bold transition-all cursor-pointer shadow-sm hover:scale-102"
-                >
-                  <Table className="w-3.5 h-3.5" />
-                  <span>Ver Cuadro Completo</span>
-                </button>
-              </div>
-            </div>
 
-            {/* Monthly Period Navigator (Renovación Mensual) */}
-            <div className="mb-6 p-3.5 rounded-2xl bg-[#091734] border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
-                <Calendar className="w-4 h-4 text-cyan-400" />
-                <span>Periodo Tributario:</span>
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+              {/* Compact Period Switcher */}
+              <div className="flex items-center gap-1.5 bg-[#061022] p-1 rounded-xl border border-slate-700">
                 <button
                   type="button"
                   onClick={handlePrevPeriod}
                   disabled={selectedPeriodIndex === 0}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-cyan-300 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-cyan-300 transition-colors cursor-pointer"
                   title="Periodo anterior"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
 
                 <select
                   value={selectedPeriodIndex}
                   onChange={(e) => setSelectedPeriodIndex(Number(e.target.value))}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 border border-cyan-500/40 text-xs sm:text-sm font-bold text-white focus:outline-none cursor-pointer"
+                  className="px-2 py-0.5 bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
                 >
                   {SUNAT_SCHEDULE_2026.map((period, idx) => (
-                    <option key={period.periodCode} value={idx}>
+                    <option key={period.periodCode} value={idx} className="bg-slate-900 text-white">
                       {period.periodName} (Vence en {period.dueMonth.split(' ')[0]})
                     </option>
                   ))}
@@ -197,100 +180,92 @@ export const RucCalendarTool: React.FC = () => {
                   type="button"
                   onClick={handleNextPeriod}
                   disabled={selectedPeriodIndex === SUNAT_SCHEDULE_2026.length - 1}
-                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-cyan-300 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-cyan-300 transition-colors cursor-pointer"
                   title="Periodo siguiente"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Digit Selection Grid (Matches Screenshot) */}
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 mb-6">
+            {/* Digit Selection Grid - Compact pills */}
+            <div className="grid grid-cols-6 sm:grid-cols-11 gap-1.5">
               {digits.map((digit) => (
                 <motion.button
                   key={String(digit)}
-                  whileHover={{ scale: 1.06, y: -2 }}
-                  whileTap={{ scale: 0.94 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSelectedDigit(digit)}
-                  className={`py-3 px-2 rounded-xl text-center font-bold text-sm sm:text-base transition-all duration-200 cursor-pointer ${
+                  className={`py-1.5 px-1 rounded-xl text-center font-bold transition-all duration-150 cursor-pointer ${
                     selectedDigit === digit
-                      ? 'bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 text-white shadow-lg shadow-cyan-900/60 scale-105 border-2 border-cyan-200'
-                      : 'bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700'
+                      ? 'bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 text-white shadow-md shadow-cyan-900/60 border border-cyan-200'
+                      : 'bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/80'
                   }`}
                 >
-                  <span className="block text-[10px] text-slate-400 uppercase font-medium">
-                    {digit === 'BC' ? 'Especial' : 'Dígito'}
+                  <span className="block text-[8px] text-slate-400 uppercase font-medium leading-none mb-0.5">
+                    {digit === 'BC' ? 'ESP' : 'DIG'}
                   </span>
-                  <span className="text-lg">{digit}</span>
+                  <span className="text-sm sm:text-base font-black leading-none">{digit}</span>
                 </motion.button>
               ))}
             </div>
 
-            {/* Selected Result Box with Official SUNAT Due Date */}
+            {/* Selected Result Box - Streamlined & Space-Efficient */}
             <motion.div
               key={`${String(selectedDigit)}-${currentPeriod.periodCode}`}
-              initial={{ opacity: 0, y: 10, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.25 }}
-              className="p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-[#091C3E] via-[#071632] to-[#050F22] border-2 border-cyan-400/60 mb-6 shadow-xl shadow-cyan-950/40 relative overflow-hidden"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-b from-[#081836] via-[#061228] to-[#040C1A] border border-cyan-400/50 shadow-lg relative overflow-hidden"
             >
-              {/* Top Banner inside card */}
-              <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center font-black text-xl text-cyan-300 font-mono shadow-inner">
+              {/* Row 1: Digit Badge, Block & Official Due Date */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2.5 border-b border-slate-800/80">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center font-black text-base text-cyan-300 font-mono shrink-0">
                     {selectedDigit}
                   </div>
                   <div>
-                    <div className="text-[11px] uppercase tracking-wider text-cyan-400 font-bold">
+                    <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wide block leading-none">
                       {currentAdvice.blockName}
-                    </div>
-                    <div className="text-sm font-semibold text-white">
-                      Periodo Tributario: <span className="text-emerald-400">{currentPeriod.periodName}</span>
-                    </div>
+                    </span>
+                    <span className="text-xs text-slate-300 font-medium leading-none mt-1 block">
+                      Periodo: <strong className="text-emerald-300">{currentPeriod.periodName}</strong>
+                    </span>
                   </div>
                 </div>
 
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/50 shadow-sm">
-                  {currentAdvice.urgency}
-                </span>
-              </div>
-
-              {/* Official Date Spotlight Box */}
-              <div className="mb-4 p-4 rounded-xl bg-[#061229] border border-cyan-500/40 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div>
-                  <span className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold block">
-                    Fecha Oficial de Vencimiento SUNAT:
-                  </span>
-                  <div className="text-xl sm:text-2xl font-black text-white mt-0.5 flex items-center gap-2">
-                    <Calendar className="w-6 h-6 text-emerald-400" />
-                    <span className="text-emerald-300 font-mono">{officialFullDate}</span>
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  <div className="text-left sm:text-right">
+                    <span className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold block leading-none">
+                      Vencimiento Oficial SUNAT:
+                    </span>
+                    <span className="text-sm sm:text-base font-extrabold text-emerald-300 font-mono leading-tight flex items-center gap-1.5 mt-0.5">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      {officialFullDate}
+                    </span>
                   </div>
-                </div>
-
-                <div className="text-center sm:text-right shrink-0">
-                  <span className="text-[10px] text-slate-400 uppercase block">Fecha Corta</span>
-                  <span className="px-3 py-1 rounded-lg bg-emerald-950 text-emerald-300 font-mono font-bold text-sm border border-emerald-500/40">
+                  <span className="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono font-bold text-xs border border-emerald-500/40 shrink-0">
                     {officialShortDate}
                   </span>
                 </div>
               </div>
 
-              {/* Practical Advice */}
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-[#0A1832] p-3 rounded-lg border border-slate-800">
-                {currentAdvice.advice}
+              {/* Row 2: Practical Advice Note */}
+              <p className="text-xs text-slate-300 leading-relaxed pt-2.5 flex items-start gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                <span>{currentAdvice.advice}</span>
               </p>
             </motion.div>
 
-            {/* Direct WhatsApp Action for Selected Digit & Official Date */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            {/* Actions: Compact WhatsApp button & Table link */}
+            <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-0.5">
               <a
                 href={`https://wa.me/51913150524?text=${encodeURIComponent(
-                  `Hola Jorge Pasache / Leader Consultores, mi RUC termina en ${selectedDigit} y deseo apoyo contable para presentar mi declaración del periodo ${currentPeriod.periodName} (Vencimiento oficial SUNAT: ${officialFullDate}).`
+                  `Hola Jorge Pasache / Leader, mi RUC termina en ${selectedDigit} y deseo asesoría contable para mi declaración del periodo ${currentPeriod.periodName} (Vence el ${officialFullDate}).`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm shadow-xl shadow-emerald-950/50 border border-emerald-400/40 transition-all hover:scale-101 text-center cursor-pointer"
+                className="w-full flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-950/50 border border-emerald-400/40 transition-all text-center cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Organizar Mis Obligaciones por WhatsApp</span>
@@ -299,68 +274,62 @@ export const RucCalendarTool: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsFullTableModalOpen(true)}
-                className="w-full sm:w-auto px-4 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
-                <Table className="w-4 h-4 text-cyan-400" />
-                <span>Cronograma 2026</span>
+                <Table className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Ver Cuadro Completo 2026</span>
               </button>
             </div>
           </motion.div>
 
-          {/* Right Column: 3 Urgent Steps */}
+          {/* Right Column: 3 Compact Advisory Steps */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 15 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-5 space-y-4"
+            transition={{ duration: 0.4 }}
+            className="lg:col-span-5 flex flex-col gap-2.5"
           >
-            <div className="p-5 rounded-2xl bg-[#091834] border border-slate-700/60 shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0">
-                  <Clock className="w-5 h-5 text-cyan-400" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-white">1. No esperes al último momento</h4>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-                    Las caídas de plataforma SUNAT en los días de vencimiento no eximen de multas. En Leader preparamos tu declaración con suficiente anticipación.
-                  </p>
-                </div>
+            <div className="p-3.5 rounded-xl bg-[#091834] border border-slate-700/60 shadow-md flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                <Clock className="w-4 h-4 text-cyan-400" />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold text-white">1. No esperes al último momento</h4>
+                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                  Las caídas de clave SOL no anulan las multas SUNAT. En Leader declaramos con 48h de holgura.
+                </p>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#091834] border border-slate-700/60 shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0">
-                  <FileCheck2 className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-white">2. Revisa compras, ventas y comprobantes</h4>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-                    Cruzar la información contable con los sistemas electrónicos SIRE y bancarización evita inconsistencias y pérdida del crédito fiscal de tu negocio.
-                  </p>
-                </div>
+            <div className="p-3.5 rounded-xl bg-[#091834] border border-slate-700/60 shadow-md flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                <FileCheck2 className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold text-white">2. Cruce con SIRE y bancarización</h4>
+                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                  Conciliamos compras, ventas y detracciones para no perder tu crédito fiscal ante fiscalizaciones.
+                </p>
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-[#091834] border border-slate-700/60 shadow-lg">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0">
-                  <Calendar className="w-5 h-5 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-white">3. Tu fecha depende del último dígito de tu RUC</h4>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
-                    Te mantenemos alertado en cada ciclo tributario para que nunca recibas una esquela ni sanción económica por presentación extemporánea.
-                  </p>
-                </div>
+            <div className="p-3.5 rounded-xl bg-[#091834] border border-slate-700/60 shadow-md flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                <Calendar className="w-4 h-4 text-blue-400" />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-bold text-white">3. Alertas preventivas Leader</h4>
+                <p className="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                  Te avisamos con anticipación en cada periodo para que operes con total tranquilidad tributaria.
+                </p>
               </div>
             </div>
 
             {/* Reassurance Banner */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/70 to-cyan-950/70 border border-emerald-500/40 text-center shadow-md">
-              <p className="text-xs font-semibold text-emerald-200">
-                ¡Jorge Pasache y el equipo de Leader están listos para asesorarte! Atención continua de lunes a sábado en Chincha.
+            <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-950/60 to-cyan-950/60 border border-emerald-500/30 text-center shadow-sm">
+              <p className="text-[11px] font-semibold text-emerald-200">
+                Atención continua de lunes a sábado en Chincha con <strong>Jorge Pasache</strong> y el equipo de Leader.
               </p>
             </div>
           </motion.div>
