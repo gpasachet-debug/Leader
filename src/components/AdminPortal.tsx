@@ -40,7 +40,8 @@ import {
   AlertTriangle,
   UserPlus,
   Building2,
-  Copy
+  Copy,
+  BarChart3
 } from 'lucide-react';
 import {
   StoredSubmission,
@@ -64,6 +65,12 @@ import {
   updateNotificationStatus,
   deleteNotificationCase
 } from '../services/notificationsService';
+import {
+  getAnalyticsConfig,
+  saveAnalyticsConfig,
+  isValidMeasurementId,
+  getEnvMeasurementId
+} from '../services/analyticsService';
 
 interface AdminPortalProps {
   isOpen: boolean;
@@ -84,8 +91,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const [periodFilter, setPeriodFilter] = useState<string>('todos');
   const [selectedSubmission, setSelectedSubmission] = useState<StoredSubmission | null>(null);
 
-  // Tab switcher: 'documents', 'notifications', or 'video'
-  const [activeTab, setActiveTab] = useState<'documents' | 'notifications' | 'video'>('documents');
+  // Tab switcher: 'documents', 'notifications', 'video', or 'analytics'
+  const [activeTab, setActiveTab] = useState<'documents' | 'notifications' | 'video' | 'analytics'>('documents');
+
+  // Google Analytics 4 state
+  const [gaMeasurementId, setGaMeasurementId] = useState<string>('');
+  const [isSavingGa, setIsSavingGa] = useState<boolean>(false);
+  const [gaSaveMessage, setGaSaveMessage] = useState<string>('');
+  const [gaError, setGaError] = useState<string>('');
 
   // Notifications SUNAT / SUNAFIL state
   const [notifications, setNotifications] = useState<NotificationCase[]>([]);
@@ -115,13 +128,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
     }
   }, []);
 
-  // Fetch submissions, notifications and video config when opened and authenticated
+  // Fetch submissions, notifications, video and analytics config when opened and authenticated
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadData();
       loadVideoConfig();
+      loadAnalyticsConfig();
     }
   }, [isOpen, isAuthenticated]);
+
+  const loadAnalyticsConfig = async () => {
+    try {
+      const cfg = await getAnalyticsConfig();
+      setGaMeasurementId(cfg.measurementId || '');
+    } catch {
+      // ignore
+    }
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -527,6 +550,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                 <Film className="w-4 h-4 text-emerald-400" />
                 <span>Video del Día / Cápsula Informativa</span>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('analytics')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeTab === 'analytics'
+                    ? 'bg-gradient-to-r from-violet-500/25 to-cyan-500/20 text-violet-200 border border-violet-400/50 shadow-md shadow-violet-950/40'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4 text-violet-400" />
+                <span>Google Analytics</span>
+                {isValidMeasurementId(gaMeasurementId) && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                )}
               </button>
             </div>
 
@@ -1279,7 +1318,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : activeTab === 'video' ? (
               /* Tab 3: Video Management Studio */
               <div className="flex-1 overflow-y-auto custom-scrollbar p-1 sm:p-2">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -1610,6 +1649,157 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                     </div>
                   </div>
 
+                </div>
+              </div>
+            ) : (
+              /* Tab 4: Google Analytics 4 Configuration */
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-1 sm:p-2">
+                <div className="max-w-3xl mx-auto space-y-6 bg-[#061022] p-6 sm:p-8 rounded-2xl border border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-violet-500/20 border border-violet-400/40 flex items-center justify-center text-violet-300">
+                        <BarChart3 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-base sm:text-lg font-extrabold text-white">
+                          Conectar Google Analytics 4 (GA4)
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          Mide visitas reales por día, ubicación (Chincha, Lima, Ica), dispositivos y clics sin consumir cuota de Render.
+                        </p>
+                      </div>
+                    </div>
+
+                    <a
+                      href="https://analytics.google.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <span>Abrir Google Analytics</span>
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+
+                  {/* Quick 3-step instructions */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase block mb-1">
+                        Paso 1
+                      </span>
+                      <p className="text-slate-300 leading-relaxed">
+                        Ingresa a <strong className="text-white">analytics.google.com</strong> y crea una cuenta/propiedad para tu web.
+                      </p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase block mb-1">
+                        Paso 2
+                      </span>
+                      <p className="text-slate-300 leading-relaxed">
+                        Elige flujo <strong className="text-white">Web</strong>, pega la URL de tu página y copia el <strong className="text-white">ID de medición</strong> (<code className="text-cyan-300">G-...</code>).
+                      </p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-slate-900/70 border border-slate-800">
+                      <span className="text-[10px] font-bold text-cyan-400 uppercase block mb-1">
+                        Paso 3
+                      </span>
+                      <p className="text-slate-300 leading-relaxed">
+                        Pégalo abajo y presiona <strong className="text-white">Guardar</strong>. En unos minutos empezarás a ver visitas en tiempo real.
+                      </p>
+                    </div>
+                  </div>
+
+                  {getEnvMeasurementId() ? (
+                    <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-xs text-emerald-200 flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>
+                        Google Analytics está activo por variable de entorno (<code className="font-mono font-bold">{getEnvMeasurementId()}</code>).
+                      </span>
+                    </div>
+                  ) : (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setGaError('');
+                        setGaSaveMessage('');
+                        const trimmed = gaMeasurementId.trim().toUpperCase();
+                        if (trimmed && !isValidMeasurementId(trimmed)) {
+                          setGaError('El formato debe ser similar a G-XXXXXXXXXX (empieza con G- seguido de letras o números).');
+                          return;
+                        }
+                        setIsSavingGa(true);
+                        try {
+                          await saveAnalyticsConfig(trimmed);
+                          setGaMeasurementId(trimmed);
+                          setGaSaveMessage(
+                            trimmed
+                              ? `¡Conectado con éxito! El ID ${trimmed} ya está midiendo visitas y consultas en la web.`
+                              : 'Se desactivó el seguimiento de Google Analytics.'
+                          );
+                        } catch (err) {
+                          console.error('Error saving analytics config:', err);
+                          setGaError('No se pudo guardar en Firestore. Intenta nuevamente.');
+                        } finally {
+                          setIsSavingGa(false);
+                        }
+                      }}
+                      className="space-y-4"
+                    >
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5">
+                          ID de Medición de Google Analytics 4 (GA4)
+                        </label>
+                        <input
+                          type="text"
+                          value={gaMeasurementId}
+                          onChange={(e) => {
+                            setGaMeasurementId(e.target.value);
+                            setGaSaveMessage('');
+                            setGaError('');
+                          }}
+                          placeholder="Ej. G-ABCD123456"
+                          className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
+                        />
+                        <p className="text-[11px] text-slate-400 mt-1.5">
+                          Déjalo vacío y guarda si alguna vez deseas pausar el rastreo.
+                        </p>
+                      </div>
+
+                      {gaError && (
+                        <div className="p-3 rounded-xl bg-rose-950/70 border border-rose-500/40 text-xs text-rose-200 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                          <span>{gaError}</span>
+                        </div>
+                      )}
+
+                      {gaSaveMessage && (
+                        <div className="p-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-xs text-emerald-200 flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>{gaSaveMessage}</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800">
+                        <span className="text-xs text-slate-400">
+                          Estado:{' '}
+                          {isValidMeasurementId(gaMeasurementId) ? (
+                            <strong className="text-emerald-400">Activo ({gaMeasurementId.toUpperCase()})</strong>
+                          ) : (
+                            <strong className="text-amber-300">Pendiente de ingresar ID</strong>
+                          )}
+                        </span>
+
+                        <button
+                          type="submit"
+                          disabled={isSavingGa}
+                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold text-xs sm:text-sm shadow-lg flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <Save className="w-4 h-4" />
+                          <span>{isSavingGa ? 'Guardando...' : 'Guardar ID de Analytics'}</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             )}

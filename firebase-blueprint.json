@@ -170,6 +170,22 @@
         }
       },
       "required": ["caseId", "contactName", "phone", "createdAt", "status"]
+    },
+    "AnalyticsConfig": {
+      "title": "AnalyticsConfig",
+      "description": "Configuración del ID de medición de Google Analytics 4 (GA4) para rastreo de visitas",
+      "type": "object",
+      "properties": {
+        "measurementId": {
+          "type": "string",
+          "description": "ID de medición de Google Analytics 4 (ej. G-ABCD123456)"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Fecha de última actualización en formato ISO"
+        }
+      },
+      "required": ["measurementId"]
     }
   },
   "firestore": {
@@ -201,7 +217,7 @@
       "schema": {
         "$ref": "#/entities/DailyVideoConfig"
       },
-      "description": "Configuraciones globales dinámicas del sitio como la cápsula de video diaria"
+      "description": "Configuraciones globales dinámicas del sitio (daily_video y analytics)"
     }
   }
 }

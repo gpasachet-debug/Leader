@@ -27,6 +27,7 @@ import {
   NotificationCase,
   NotificationEntity,
 } from '../services/notificationsService';
+import { trackEvent } from '../services/analyticsService';
 
 type FormMode = 'notificacion' | 'asesoria';
 
@@ -184,6 +185,12 @@ export const ConsultationForm: React.FC = () => {
       }`;
 
       const generatedWaUrl = `https://wa.me/51913150524?text=${encodeURIComponent(message)}`;
+      trackEvent('submit_consultation', {
+        mode: formMode,
+        entity: selectedEntity,
+        is_existing_client: isExistingClient,
+        has_pdf: Boolean(savedCase.pdfFileName),
+      });
       setWaUrl(generatedWaUrl);
       setSubmittedCase(savedCase);
     } catch (err) {

@@ -21,11 +21,17 @@ import { ClientDocumentUpload } from './components/ClientDocumentUpload';
 import { FloatingUploadButton } from './components/FloatingUploadButton';
 import { AdminPortal } from './components/AdminPortal';
 import { NotificationCaseModal } from './components/NotificationCaseModal';
+import { initAnalytics } from './services/analyticsService';
 
 export default function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [activeNotificationCaseId, setActiveNotificationCaseId] = useState<string | null>(null);
+
+  // Initialize Google Analytics 4 if configured (env var or Firestore)
+  useEffect(() => {
+    initAnalytics();
+  }, []);
 
   // Allow URL hash like #enviar-archivos, #admin, #panel, #notificacion=NTF-...
   useEffect(() => {
