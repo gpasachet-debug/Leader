@@ -176,7 +176,7 @@ export const Hero: React.FC = () => {
               {/* Photo of Jorge Pasache */}
               <div className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden group">
                 <img
-                  src="/assets/aistudio/Retrato_corporativo_en_oficina_moderna_565a0548.png"
+                  src="/assets/jorge_retrato.webp"
                   alt="Jorge Pasache - Consultor Contable y Tributario Leader"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-103"

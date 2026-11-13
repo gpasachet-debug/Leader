@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { ShieldCheck, LineChart, ShieldAlert, Clock, CheckCircle, MapPin, MessageSquare, Award, Sparkles, Check } from 'lucide-react';
 import { WHY_LEADER_BENEFITS, LEADER_INFO } from '../data/content';
 import { LeaderLogo } from './LeaderLogo';
-import imgQualityGuarantee from '../assets/images/leader_quality_guarantee_audit_1794215662004.jpg';
+import imgQualityGuarantee from '../assets/images/leader_quality_guarantee_audit_1794215662004.webp';
 
 export const WhyUsSection: React.FC = () => {
   const iconList = [LineChart, ShieldCheck, ShieldAlert, Clock];

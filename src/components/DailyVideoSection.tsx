@@ -17,8 +17,11 @@ import {
 import {
   DailyVideoData,
   DEFAULT_DAILY_VIDEO,
-  getDailyVideoConfig
+  getDailyVideoConfig,
+  normalizeVideoUrl,
+  getEmbedVideoUrl
 } from '../services/videoConfigService';
+import posterMeetingImg from '../assets/images/business_growth_meeting_1794215306152.webp';
 
 export const DailyVideoSection: React.FC = () => {
   // Synchronous initialization from localStorage prevents flash of default video when deleted
@@ -31,7 +34,7 @@ export const DailyVideoSection: React.FC = () => {
           title: parsed.title ?? DEFAULT_DAILY_VIDEO.title,
           description: parsed.description ?? DEFAULT_DAILY_VIDEO.description,
           category: parsed.category ?? DEFAULT_DAILY_VIDEO.category,
-          videoUrl: typeof parsed.videoUrl === 'string' ? parsed.videoUrl.trim() : DEFAULT_DAILY_VIDEO.videoUrl,
+          videoUrl: typeof parsed.videoUrl === 'string' ? normalizeVideoUrl(parsed.videoUrl) : DEFAULT_DAILY_VIDEO.videoUrl,
           dateFormatted: parsed.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
           updatedAt: parsed.updatedAt ?? DEFAULT_DAILY_VIDEO.updatedAt,
         };
@@ -50,6 +53,7 @@ export const DailyVideoSection: React.FC = () => {
 
   // Check whether a video is actively published
   const hasVideo = Boolean(videoData.videoUrl && videoData.videoUrl.trim().length > 0);
+  const embedUrl = hasVideo ? getEmbedVideoUrl(videoData.videoUrl) : null;
 
   // Synchronize configuration from both Firestore and local events
   useEffect(() => {
@@ -86,7 +90,7 @@ export const DailyVideoSection: React.FC = () => {
               title: data.title ?? DEFAULT_DAILY_VIDEO.title,
               description: data.description ?? DEFAULT_DAILY_VIDEO.description,
               category: data.category ?? DEFAULT_DAILY_VIDEO.category,
-              videoUrl: typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '',
+              videoUrl: typeof data.videoUrl === 'string' ? normalizeVideoUrl(data.videoUrl) : '',
               dateFormatted: data.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
               updatedAt: data.updatedAt ?? new Date().toISOString(),
             };
@@ -244,95 +248,107 @@ export const DailyVideoSection: React.FC = () => {
             {/* Left Column: Vertical Video Player (9:16 Aspect Ratio) */}
             <div className="lg:col-span-5 flex justify-center">
               <div className="relative w-full max-w-[310px] sm:max-w-[340px] aspect-[9/16] rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/60 group">
-                
-                {/* Video Element */}
-                <video
-                  ref={videoRef}
-                  src={videoData.videoUrl}
-                  playsInline
-                  muted={isMuted}
-                  loop
-                  onTimeUpdate={handleTimeUpdate}
-                  onLoadedMetadata={handleLoadedMetadata}
-                  onEnded={handleVideoEnded}
-                  className="w-full h-full object-cover cursor-pointer"
-                  onClick={togglePlay}
-                  poster="/assets/images/business_growth_meeting_1794215306152.jpg"
-                />
-
-                {/* Big Play Overlay when paused */}
-                {!isPlaying && (
-                  <div
-                    onClick={togglePlay}
-                    className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer transition-opacity"
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.15 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-xl shadow-cyan-950/80 pl-1 cursor-pointer"
-                    >
-                      <Play className="w-8 h-8 fill-current" />
-                    </motion.div>
-                    <span className="mt-3 text-xs font-bold text-white uppercase tracking-wider drop-shadow-md">
-                      Reproducir Video
-                    </span>
-                  </div>
-                )}
-
-                {/* Top Video Badges */}
-                <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-                  <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-cyan-400/40 text-[10px] font-bold text-cyan-300 uppercase tracking-wide">
-                    {videoData.category}
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-950/90 backdrop-blur-md border border-emerald-500/40 text-[9px] font-semibold text-emerald-300">
-                    {videoData.dateFormatted || 'Actualidad'}
-                  </span>
-                </div>
-
-                {/* Bottom In-Video Controls Bar */}
-                <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col gap-2 z-10">
-                  {/* Progress track */}
-                  <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-150"
-                      style={{ width: `${progress}%` }}
+                {embedUrl ? (
+                  <iframe
+                    src={embedUrl}
+                    title={videoData.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                ) : (
+                  <>
+                    {/* Video Element with preload=metadata to save bandwidth */}
+                    <video
+                      ref={videoRef}
+                      src={videoData.videoUrl}
+                      preload="metadata"
+                      playsInline
+                      muted={isMuted}
+                      loop
+                      onTimeUpdate={handleTimeUpdate}
+                      onLoadedMetadata={handleLoadedMetadata}
+                      onEnded={handleVideoEnded}
+                      className="w-full h-full object-cover cursor-pointer"
+                      onClick={togglePlay}
+                      poster={posterMeetingImg}
                     />
-                  </div>
 
-                  <div className="flex items-center justify-between text-white text-xs">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
+                    {/* Big Play Overlay when paused */}
+                    {!isPlaying && (
+                      <div
                         onClick={togglePlay}
-                        className="p-1 rounded-md hover:bg-white/20 transition-colors cursor-pointer"
-                        title={isPlaying ? 'Pausar' : 'Reproducir'}
+                        className="absolute inset-0 bg-black/45 backdrop-blur-[2px] flex flex-col items-center justify-center cursor-pointer transition-opacity"
                       >
-                        {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={toggleMute}
-                        className="p-1 rounded-md hover:bg-white/20 transition-colors cursor-pointer"
-                        title={isMuted ? 'Activar sonido' : 'Silenciar'}
-                      >
-                        {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
-                      </button>
+                        <motion.div
+                          whileHover={{ scale: 1.15 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center text-white shadow-xl shadow-cyan-950/80 pl-1 cursor-pointer"
+                        >
+                          <Play className="w-8 h-8 fill-current" />
+                        </motion.div>
+                        <span className="mt-3 text-xs font-bold text-white uppercase tracking-wider drop-shadow-md">
+                          Reproducir Video
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Top Video Badges */}
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+                      <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-cyan-400/40 text-[10px] font-bold text-cyan-300 uppercase tracking-wide">
+                        {videoData.category}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-emerald-950/90 backdrop-blur-md border border-emerald-500/40 text-[9px] font-semibold text-emerald-300">
+                        {videoData.dateFormatted || 'Actualidad'}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[10px] text-slate-300 font-mono">
-                      {duration > 0 && <span>{formatSeconds((duration * progress) / 100)} / {formatSeconds(duration)}</span>}
-                      <button
-                        type="button"
-                        onClick={handleFullscreen}
-                        className="p-1 rounded-md hover:bg-white/20 transition-colors cursor-pointer"
-                        title="Pantalla completa"
-                      >
-                        <Maximize2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                    {/* Bottom In-Video Controls Bar */}
+                    <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col gap-2 z-10">
+                      {/* Progress track */}
+                      <div className="w-full h-1 bg-white/30 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-150"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
 
+                      <div className="flex items-center justify-between text-white text-xs">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={togglePlay}
+                            className="p-1 rounded-md hover:bg-white/20 transition-colors cursor-pointer"
+                            title={isPlaying ? 'Pausar' : 'Reproducir'}
+                          >
+                            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={toggleMute}
+                            className="p-1 rounded-md hover:bg-white/20 transition-colors cursor-pointer"
+                            title={isMuted ? 'Activar sonido' : 'Silenciar'}
+                          >
+                            {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-[10px] text-slate-300 font-mono">
+                          {duration > 0 && <span>{formatSeconds((duration * progress) / 100)} / {formatSeconds(duration)}</span>}
+                          <button
+                            type="button"
+                            onClick={handleFullscreen}
+                            className="p-1 rounded-md hover:bg-white/20 transition-colors cursor-pointer"
+                            title="Pantalla completa"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

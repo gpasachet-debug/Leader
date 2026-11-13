@@ -23,7 +23,7 @@ export const LeaderLogo: React.FC<LeaderLogoProps> = ({
   return (
     <div className={`inline-flex items-center select-none ${className}`}>
       <img
-        src="/assets/aistudio/Logo_futurista_Leader_con_circuitos_luminosos_9d91ee2c.png"
+        src="/assets/leader_logo.webp"
         alt="Leader - Tax, accounting & business consulting"
         className={`w-auto object-contain drop-shadow-[0_0_24px_rgba(0,194,255,0.45)] transition-all duration-300 hover:scale-[1.03] ${sizeClasses[size]}`}
         loading="eager"

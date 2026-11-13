@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Store, Building2, ShoppingBag, Briefcase, CheckCircle, ArrowRight, MessageSquare } from 'lucide-react';
 import { TARGET_AUDIENCES, TargetAudience } from '../data/content';
 
-import imgMypes from '../assets/images/small_business_retail_pos_1794215660551.jpg';
-import imgEmpresas from '../assets/images/business_growth_meeting_1794215306152.jpg';
-import imgComerciantes from '../assets/images/tax_advisory_charts_1794215304966.jpg';
-import imgIndependientes from '../assets/images/independent_consultant_workspace_1794215661910.jpg';
+import imgMypes from '../assets/images/small_business_retail_pos_1794215660551.webp';
+import imgEmpresas from '../assets/images/business_growth_meeting_1794215306152.webp';
+import imgComerciantes from '../assets/images/tax_advisory_charts_1794215304966.webp';
+import imgIndependientes from '../assets/images/independent_consultant_workspace_1794215661910.webp';
 
 const iconMap: Record<string, React.ElementType> = {
   Store,
@@ -89,9 +89,10 @@ export const TargetAudienceSection: React.FC = () => {
             {/* Visual Photo Header with Rounded Corners matching user example */}
             <div className="relative w-full h-64 sm:h-80 md:h-[400px] lg:h-[440px] rounded-2xl overflow-hidden mb-8 border border-slate-700/60 shadow-2xl bg-slate-900">
               <img
-                src={audienceImages[activeAudience.id] || "/assets/images/business_growth_meeting_1794215306152.jpg"}
+                src={audienceImages[activeAudience.id] || imgEmpresas}
                 alt={activeAudience.title}
                 referrerPolicy="no-referrer"
+                loading="lazy"
                 className="w-full h-full object-cover object-[center_20%] transition-transform duration-700 hover:scale-103"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B1C3D] via-[#0B1C3D]/20 to-transparent" />

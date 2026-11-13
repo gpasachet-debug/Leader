@@ -34,9 +34,10 @@ export const FloatingWhatsApp: React.FC = () => {
               <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <img
-                    src="/assets/aistudio/Retrato_corporativo_en_oficina_moderna_565a0548.png"
+                    src="/assets/jorge_retrato.webp"
                     alt="Jorge Pasache Leader"
                     className="w-9 h-9 rounded-full object-cover border border-cyan-400"
+                    loading="lazy"
                   />
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-[#091730]" />
                 </div>

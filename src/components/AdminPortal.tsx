@@ -54,7 +54,8 @@ import {
   DEFAULT_DAILY_VIDEO,
   getDailyVideoConfig,
   saveDailyVideoConfig,
-  removeDailyVideo
+  removeDailyVideo,
+  getEmbedVideoUrl
 } from '../services/videoConfigService';
 import {
   NotificationCase,
@@ -1405,7 +1406,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
                               setLocalVideoFileName('');
                               setVideoSaveSuccess(false);
                             }}
-                            placeholder="Ruta local (/assets/...) o enlace web, o déjalo vacío para solo texto"
+                            placeholder="Pega enlace de YouTube / Shorts / Vimeo (ahorra ancho de banda) o ruta local"
                             className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-500"
                           />
                         </div>
@@ -1548,13 +1549,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
 
                     {videoUrl ? (
                       <div className="relative w-full max-w-[270px] aspect-[9/16] rounded-3xl overflow-hidden bg-black border-2 border-cyan-500/50 shadow-2xl shadow-cyan-950/60">
-                        <video
-                          key={videoUrl}
-                          src={videoUrl}
-                          controls
-                          playsInline
-                          className="w-full h-full object-cover"
-                        />
+                        {getEmbedVideoUrl(videoUrl) ? (
+                          <iframe
+                            key={videoUrl}
+                            src={getEmbedVideoUrl(videoUrl) || ''}
+                            title={videoTitle || 'Video informativo'}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video
+                            key={videoUrl}
+                            src={videoUrl}
+                            controls
+                            playsInline
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
                           <span className="px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-cyan-400/40 text-[9px] font-bold text-cyan-300 uppercase">
                             {videoCategory || 'Actualidad'}

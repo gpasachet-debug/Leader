@@ -1,9 +1,9 @@
-import imgAccountingDesk from '../assets/images/accounting_ledger_desk_1794215304892.jpg';
-import imgMonthlyAccounting from '../assets/images/monthly_accounting_spreadsheets_1794215659747.jpg';
-import imgTaxAdvisory from '../assets/images/tax_advisory_charts_1794215304966.jpg';
-import imgPayrollHr from '../assets/images/payroll_hr_management_1794215306711.jpg';
-import imgTaxDebt from '../assets/images/tax_debt_settlement_docs_1794215660495.jpg';
-import imgBusinessGrowth from '../assets/images/business_growth_meeting_1794215306152.jpg';
+import imgAccountingDesk from '../assets/images/accounting_ledger_desk_1794215304892.webp';
+import imgMonthlyAccounting from '../assets/images/monthly_accounting_spreadsheets_1794215659747.webp';
+import imgTaxAdvisory from '../assets/images/tax_advisory_charts_1794215304966.webp';
+import imgPayrollHr from '../assets/images/payroll_hr_management_1794215306711.webp';
+import imgTaxDebt from '../assets/images/tax_debt_settlement_docs_1794215660495.webp';
+import imgBusinessGrowth from '../assets/images/business_growth_meeting_1794215306152.webp';
 
 export interface ServiceItem {
   id: string;

@@ -22,6 +22,9 @@ export default defineConfig(() => {
     preview: {
       host: true,
       allowedHosts: true as const,
+      headers: {
+        'Cache-Control': 'public, max-age=604800',
+      },
     },
   };
 });
