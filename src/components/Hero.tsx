@@ -176,10 +176,10 @@ export const Hero: React.FC = () => {
               {/* Photo of Jorge Pasache */}
               <div className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden group">
                 <img
-                  src="/assets/jorge_retrato.webp"
+                  src="/assets/jorge_retrato.webp?v=2"
                   alt="Jorge Pasache - Consultor Contable y Tributario Leader"
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-103"
+                  className="w-full h-full object-cover object-[center_20%] transition-transform duration-700 group-hover:scale-103"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#081226] via-transparent to-black/10" />
 
