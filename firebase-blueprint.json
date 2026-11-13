@@ -104,6 +104,72 @@
         }
       },
       "required": ["title"]
+    },
+    "SunatNotificationCase": {
+      "title": "SunatNotificationCase",
+      "description": "Consulta y documento PDF de notificación SUNAT o SUNAFIL enviado por clientes o no clientes",
+      "type": "object",
+      "properties": {
+        "caseId": {
+          "type": "string",
+          "description": "Código único del caso (ej. NTF-202611-1234)"
+        },
+        "contactName": {
+          "type": "string",
+          "description": "Nombre de la persona que solicita ayuda"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Teléfono o WhatsApp de contacto"
+        },
+        "businessName": {
+          "type": "string",
+          "description": "Nombre de empresa o negocio (opcional)"
+        },
+        "ruc": {
+          "type": "string",
+          "description": "RUC de 11 dígitos (opcional para no clientes)"
+        },
+        "entity": {
+          "type": "string",
+          "enum": ["SUNAT", "SUNAFIL", "Ambas / Otra", "Asesoría General"],
+          "description": "Entidad que emitió la notificación o tipo de consulta"
+        },
+        "isExistingClient": {
+          "type": "boolean",
+          "description": "Indica si ya es cliente actual de Leader o aún no es cliente"
+        },
+        "serviceInterest": {
+          "type": "string",
+          "description": "Servicio de interés seleccionado"
+        },
+        "message": {
+          "type": "string",
+          "description": "Detalle de la consulta o notificación"
+        },
+        "pdfFileName": {
+          "type": "string",
+          "description": "Nombre del archivo PDF adjunto"
+        },
+        "pdfFileSize": {
+          "type": "number",
+          "description": "Tamaño del PDF en bytes"
+        },
+        "pdfChunksCount": {
+          "type": "number",
+          "description": "Cantidad de fragmentos Base64 almacenados"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Fecha de creación en formato ISO"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["nuevo", "en_revision", "atendido"],
+          "description": "Estado de atención de la notificación"
+        }
+      },
+      "required": ["caseId", "contactName", "phone", "createdAt", "status"]
     }
   },
   "firestore": {
@@ -118,6 +184,18 @@
         "$ref": "#/entities/FileChunk"
       },
       "description": "Fragmentos de archivos binarios (PDF, XML, Excel, Word) para descarga confiable"
+    },
+    "/sunat_notifications/{notificationId}": {
+      "schema": {
+        "$ref": "#/entities/SunatNotificationCase"
+      },
+      "description": "Consultas y notificaciones PDF de SUNAT o SUNAFIL enviadas desde el formulario de contacto"
+    },
+    "/sunat_notifications/{notificationId}/chunks/{chunkId}": {
+      "schema": {
+        "$ref": "#/entities/FileChunk"
+      },
+      "description": "Fragmentos binarios en Base64 del documento PDF de la notificación SUNAT/SUNAFIL"
     },
     "/site_config/{configId}": {
       "schema": {

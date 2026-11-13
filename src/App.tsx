@@ -20,19 +20,38 @@ import { DailyVideoSection } from './components/DailyVideoSection';
 import { ClientDocumentUpload } from './components/ClientDocumentUpload';
 import { FloatingUploadButton } from './components/FloatingUploadButton';
 import { AdminPortal } from './components/AdminPortal';
+import { NotificationCaseModal } from './components/NotificationCaseModal';
 
 export default function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [activeNotificationCaseId, setActiveNotificationCaseId] = useState<string | null>(null);
 
-  // Allow URL hash like #enviar-archivos, #admin or #panel to open the modals seamlessly
+  // Allow URL hash like #enviar-archivos, #admin, #panel, #notificacion=NTF-...
   useEffect(() => {
     const handleHash = () => {
-      const hash = window.location.hash.toLowerCase();
-      if (hash === '#enviar-archivos' || hash === '#documentos') {
+      const rawHash = window.location.hash;
+      const hashLower = rawHash.toLowerCase();
+      const params = new URLSearchParams(window.location.search);
+      const queryCase = params.get('notificacion');
+
+      if (queryCase) {
+        setActiveNotificationCaseId(queryCase);
+        return;
+      }
+
+      if (hashLower.startsWith('#notificacion=')) {
+        const extractedId = rawHash.slice('#notificacion='.length).trim();
+        if (extractedId) {
+          setActiveNotificationCaseId(extractedId);
+          return;
+        }
+      }
+
+      if (hashLower === '#enviar-archivos' || hashLower === '#documentos') {
         setIsUploadModalOpen(true);
         history.replaceState(null, '', window.location.pathname);
-      } else if (hash === '#admin' || hash === '#panel' || hash === '#leader-admin') {
+      } else if (hashLower === '#admin' || hashLower === '#panel' || hashLower === '#leader-admin') {
         setIsAdminModalOpen(true);
         history.replaceState(null, '', window.location.pathname);
       }
@@ -102,6 +121,15 @@ export default function App() {
       <AdminPortal
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
+      />
+
+      {/* Direct Notification PDF Viewer Modal (from WhatsApp link) */}
+      <NotificationCaseModal
+        caseId={activeNotificationCaseId}
+        onClose={() => {
+          setActiveNotificationCaseId(null);
+          history.replaceState(null, '', window.location.pathname);
+        }}
       />
     </div>
   );

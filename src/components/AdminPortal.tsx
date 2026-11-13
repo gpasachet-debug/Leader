@@ -36,7 +36,11 @@ import {
   Pause,
   Volume2,
   VolumeX,
-  VideoOff
+  VideoOff,
+  AlertTriangle,
+  UserPlus,
+  Building2,
+  Copy
 } from 'lucide-react';
 import {
   StoredSubmission,
@@ -52,6 +56,13 @@ import {
   saveDailyVideoConfig,
   removeDailyVideo
 } from '../services/videoConfigService';
+import {
+  NotificationCase,
+  getNotificationCasesList,
+  downloadNotificationPdf,
+  updateNotificationStatus,
+  deleteNotificationCase
+} from '../services/notificationsService';
 
 interface AdminPortalProps {
   isOpen: boolean;
@@ -72,8 +83,17 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const [periodFilter, setPeriodFilter] = useState<string>('todos');
   const [selectedSubmission, setSelectedSubmission] = useState<StoredSubmission | null>(null);
 
-  // Tab switcher: 'documents' or 'video'
-  const [activeTab, setActiveTab] = useState<'documents' | 'video'>('documents');
+  // Tab switcher: 'documents', 'notifications', or 'video'
+  const [activeTab, setActiveTab] = useState<'documents' | 'notifications' | 'video'>('documents');
+
+  // Notifications SUNAT / SUNAFIL state
+  const [notifications, setNotifications] = useState<NotificationCase[]>([]);
+  const [selectedNotification, setSelectedNotification] = useState<NotificationCase | null>(null);
+  const [notifSearch, setNotifSearch] = useState<string>('');
+  const [notifFilter, setNotifFilter] = useState<string>('todos');
+  const [downloadingNotifId, setDownloadingNotifId] = useState<string | null>(null);
+  const [confirmDeleteNotifId, setConfirmDeleteNotifId] = useState<string | null>(null);
+  const [copiedNotifLink, setCopiedNotifLink] = useState<boolean>(false);
 
   // Video Management Studio state
   const [videoTitle, setVideoTitle] = useState<string>(DEFAULT_DAILY_VIDEO.title);
@@ -94,7 +114,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
     }
   }, []);
 
-  // Fetch submissions and video config when opened and authenticated
+  // Fetch submissions, notifications and video config when opened and authenticated
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadData();
@@ -105,14 +125,22 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const data = await getSubmissionsList();
+      const [data, notifData] = await Promise.all([
+        getSubmissionsList(),
+        getNotificationCasesList(),
+      ]);
       setSubmissions(data);
+      setNotifications(notifData);
       if (selectedSubmission) {
         const updated = data.find((s) => s.id === selectedSubmission.id);
         if (updated) setSelectedSubmission(updated);
       }
+      if (selectedNotification) {
+        const updatedNotif = notifData.find((n) => n.id === selectedNotification.id);
+        if (updatedNotif) setSelectedNotification(updatedNotif);
+      }
     } catch (err) {
-      console.error('Error fetching submissions:', err);
+      console.error('Error fetching admin data:', err);
     } finally {
       setIsLoading(false);
     }
@@ -214,7 +242,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    if (pinInput.trim() === DEFAULT_ADMIN_PIN || pinInput.trim() === '1234') {
+    if (pinInput.trim() === DEFAULT_ADMIN_PIN) {
       setIsAuthenticated(true);
       sessionStorage.setItem('leader_admin_logged', 'true');
       setPinInput('');
@@ -452,10 +480,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
               >
                 Entrar al Panel
               </button>
-
-              <p className="text-[11px] text-slate-500 pt-2">
-                Clave inicial por defecto: <code className="text-cyan-300 font-mono">Leader2026</code>
-              </p>
             </form>
           </div>
         ) : (
@@ -463,11 +487,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
           <div className="flex-1 flex flex-col min-h-0 pt-4 space-y-4 overflow-hidden">
             
             {/* Top Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveTab('documents')}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === 'documents'
                     ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-400/50 shadow-md shadow-cyan-950/40'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
@@ -479,8 +503,21 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
 
               <button
                 type="button"
+                onClick={() => setActiveTab('notifications')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                  activeTab === 'notifications'
+                    ? 'bg-gradient-to-r from-amber-500/25 to-rose-500/20 text-amber-200 border border-amber-400/50 shadow-md shadow-amber-950/40'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
+                }`}
+              >
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <span>Notificaciones SUNAT / SUNAFIL ({notifications.length})</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab('video')}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
                   activeTab === 'video'
                     ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 border border-emerald-400/50 shadow-md shadow-emerald-950/40'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60 border border-transparent'
@@ -849,8 +886,400 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ isOpen, onClose }) => 
 
             </div>
             </>
+            ) : activeTab === 'notifications' ? (
+              /* Tab 2: Notificaciones SUNAT / SUNAFIL & Consultas con PDF */
+              <div className="flex-1 flex flex-col min-h-0 space-y-4 overflow-hidden">
+                {/* Search & Filter Bar */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0 bg-[#061022] p-3 rounded-2xl border border-slate-800">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={notifSearch}
+                      onChange={(e) => setNotifSearch(e.target.value)}
+                      placeholder="Buscar por nombre, RUC, empresa o código NTF-..."
+                      className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={notifFilter}
+                      onChange={(e) => setNotifFilter(e.target.value)}
+                      className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200 focus:outline-none cursor-pointer"
+                    >
+                      <option value="todos">Todos los Casos</option>
+                      <option value="no_cliente">Solo No Clientes</option>
+                      <option value="nuevo">Nuevos</option>
+                      <option value="en_revision">En Revisión</option>
+                      <option value="atendido">Atendidos</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={loadData}
+                      disabled={isLoading}
+                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition-colors cursor-pointer"
+                      title="Actualizar notificaciones"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Split View */}
+                <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 overflow-hidden">
+                  {/* Left List */}
+                  <div className="lg:col-span-5 flex flex-col min-h-0 bg-[#061022] rounded-2xl border border-slate-800 overflow-hidden">
+                    <div className="p-3 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
+                      <span>Casos Recibidos</span>
+                      <span className="font-mono text-amber-300">
+                        {notifications.filter((n) => !n.isExistingClient).length} no clientes
+                      </span>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                      {(() => {
+                        const filtered = notifications.filter((n) => {
+                          const q = notifSearch.toLowerCase();
+                          const matchSearch =
+                            (n.contactName || '').toLowerCase().includes(q) ||
+                            (n.ruc || '').toLowerCase().includes(q) ||
+                            (n.businessName || '').toLowerCase().includes(q) ||
+                            (n.caseId || '').toLowerCase().includes(q);
+                          const matchFilter =
+                            notifFilter === 'todos'
+                              ? true
+                              : notifFilter === 'no_cliente'
+                              ? !n.isExistingClient
+                              : n.status === notifFilter;
+                          return matchSearch && matchFilter;
+                        });
+
+                        if (filtered.length === 0) {
+                          return (
+                            <div className="p-8 text-center text-slate-500 text-xs">
+                              No hay notificaciones SUNAT / SUNAFIL registradas todavía.
+                            </div>
+                          );
+                        }
+
+                        return filtered.map((item) => {
+                          const isSelected = selectedNotification?.id === item.id;
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => {
+                                setSelectedNotification(item);
+                                setConfirmDeleteNotifId(null);
+                              }}
+                              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-amber-950/40 border-amber-400/80 shadow-md'
+                                  : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <span className="px-2 py-0.5 rounded bg-rose-950/80 border border-rose-500/40 text-[10px] font-bold text-rose-200">
+                                  {item.entity}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                                    item.status === 'atendido'
+                                      ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40'
+                                      : item.status === 'en_revision'
+                                      ? 'bg-blue-950 text-blue-300 border-blue-500/40'
+                                      : 'bg-amber-950 text-amber-300 border-amber-500/40'
+                                  }`}
+                                >
+                                  {item.status === 'en_revision' ? 'En Revisión' : item.status}
+                                </span>
+                              </div>
+
+                              <h5 className="text-xs font-bold text-white truncate">
+                                {item.contactName} {item.ruc ? `· RUC ${item.ruc}` : ''}
+                              </h5>
+                              <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                                {item.businessName}
+                              </p>
+
+                              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-800/60 text-[10px]">
+                                <span className={item.isExistingClient ? 'text-cyan-300' : 'text-amber-300 font-semibold'}>
+                                  {item.isExistingClient ? 'Cliente actual' : 'No cliente (Nuevo)'}
+                                </span>
+                                <span className="text-slate-400">
+                                  {item.pdfFileName ? '📄 PDF adjunto' : 'Sin PDF'}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Right Detail */}
+                  <div className="lg:col-span-7 flex flex-col min-h-0 bg-[#061022] rounded-2xl border border-slate-800 overflow-hidden">
+                    {selectedNotification ? (
+                      <div className="flex-1 overflow-y-auto p-4 sm:p-5 custom-scrollbar space-y-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3 pb-3 border-b border-slate-800">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="px-2.5 py-0.5 rounded bg-rose-950 border border-rose-500/40 text-[11px] font-bold text-rose-200">
+                                {selectedNotification.entity}
+                              </span>
+                              <span className="font-mono text-xs text-slate-400">
+                                {selectedNotification.caseId}
+                              </span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  selectedNotification.isExistingClient
+                                    ? 'bg-cyan-950/60 border-cyan-500/40 text-cyan-300'
+                                    : 'bg-amber-950/70 border-amber-500/50 text-amber-200'
+                                }`}
+                              >
+                                {selectedNotification.isExistingClient
+                                  ? 'Ya es cliente'
+                                  : 'Aún no es cliente'}
+                              </span>
+                            </div>
+                            <h4 className="text-base sm:text-lg font-black text-white mt-1.5">
+                              {selectedNotification.contactName}
+                            </h4>
+                            <p className="text-xs text-slate-300">
+                              {selectedNotification.businessName}{' '}
+                              {selectedNotification.ruc ? `— RUC: ${selectedNotification.ruc}` : ''}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {(['nuevo', 'en_revision', 'atendido'] as const).map((st) => (
+                              <button
+                                key={st}
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    await updateNotificationStatus(selectedNotification.id, st);
+                                    setNotifications((prev) =>
+                                      prev.map((n) =>
+                                        n.id === selectedNotification.id ? { ...n, status: st } : n
+                                      )
+                                    );
+                                    setSelectedNotification((prev) =>
+                                      prev ? { ...prev, status: st } : null
+                                    );
+                                  } catch (err) {
+                                    console.error('Error updating notification status:', err);
+                                  }
+                                }}
+                                className={`px-2 py-1 rounded text-[11px] font-semibold border transition-colors cursor-pointer ${
+                                  selectedNotification.status === st
+                                    ? st === 'atendido'
+                                      ? 'bg-emerald-950 text-emerald-300 border-emerald-500'
+                                      : st === 'en_revision'
+                                      ? 'bg-blue-950 text-blue-300 border-blue-500'
+                                      : 'bg-amber-950 text-amber-300 border-amber-500'
+                                    : 'bg-slate-900 text-slate-400 border-slate-700 hover:text-white'
+                                }`}
+                              >
+                                {st === 'en_revision'
+                                  ? 'En Revisión'
+                                  : st === 'atendido'
+                                  ? 'Atendido'
+                                  : 'Nuevo'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span className="text-[10px] text-slate-400 uppercase block">Teléfono / WhatsApp</span>
+                            <span className="font-mono font-bold text-emerald-300">
+                              {selectedNotification.phone}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span className="text-[10px] text-slate-400 uppercase block">Fecha de Envío</span>
+                            <span className="font-semibold text-white">
+                              {selectedNotification.dateFormatted || selectedNotification.createdAt}
+                            </span>
+                          </div>
+                          <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span className="text-[10px] text-slate-400 uppercase block">Motivo</span>
+                            <span className="font-semibold text-cyan-300">
+                              {selectedNotification.serviceInterest}
+                            </span>
+                          </div>
+                        </div>
+
+                        {selectedNotification.message && (
+                          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
+                            <span className="text-amber-300 font-semibold block mb-1">
+                              Detalle del mensaje:
+                            </span>
+                            <p className="leading-relaxed whitespace-pre-wrap">
+                              {selectedNotification.message}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* PDF Box */}
+                        <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-white uppercase tracking-wider">
+                              Documento PDF de Notificación
+                            </span>
+                          </div>
+
+                          {selectedNotification.pdfFileName ? (
+                            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#071329] border border-cyan-500/30">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-9 h-9 rounded-lg bg-rose-500/20 border border-rose-400/30 flex items-center justify-center shrink-0">
+                                  <FileText className="w-4 h-4 text-rose-300" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-white truncate max-w-[240px]">
+                                    {selectedNotification.pdfFileName}
+                                  </p>
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    PDF · {formatFileSize(selectedNotification.pdfFileSize)}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const link = `${window.location.origin}/#notificacion=${selectedNotification.caseId}`;
+                                    try {
+                                      await navigator.clipboard.writeText(link);
+                                      setCopiedNotifLink(true);
+                                      setTimeout(() => setCopiedNotifLink(false), 2500);
+                                    } catch {
+                                      // ignore
+                                    }
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                  <span>{copiedNotifLink ? 'Copiado' : 'Copiar link'}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  disabled={downloadingNotifId === selectedNotification.id}
+                                  onClick={async () => {
+                                    setDownloadingNotifId(selectedNotification.id);
+                                    try {
+                                      await downloadNotificationPdf(selectedNotification);
+                                    } catch (err) {
+                                      console.error('Error downloading PDF:', err);
+                                    } finally {
+                                      setDownloadingNotifId(null);
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 font-semibold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  <span>
+                                    {downloadingNotifId === selectedNotification.id
+                                      ? 'Descargando...'
+                                      : 'Descargar PDF'}
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-400">
+                              El remitente no adjuntó archivo PDF en esta solicitud.
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                          {(() => {
+                            const digits = (selectedNotification.phone || '').replace(/\D/g, '');
+                            const fullNum =
+                              digits.length >= 9
+                                ? digits.startsWith('51')
+                                  ? digits
+                                  : `51${digits}`
+                                : '';
+                            const replyMsg =
+                              `*LEADER CONSULTORES - ATENCIÓN ${selectedNotification.entity}*\n` +
+                              `Hola *${selectedNotification.contactName}*, hemos recibido tu caso (${selectedNotification.caseId}). Nuestro equipo está revisando la información para orientarte sobre los plazos y acciones recomendadas.`;
+                            const replyHref = fullNum
+                              ? `https://wa.me/${fullNum}?text=${encodeURIComponent(replyMsg)}`
+                              : `https://wa.me/?text=${encodeURIComponent(replyMsg)}`;
+                            return (
+                              <a
+                                href={replyHref}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold text-xs flex items-center gap-2 shadow-md transition-all"
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                                <span>Responder por WhatsApp al {selectedNotification.phone}</span>
+                              </a>
+                            );
+                          })()}
+
+                          {confirmDeleteNotifId === selectedNotification.id ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  try {
+                                    await deleteNotificationCase(selectedNotification);
+                                    setNotifications((prev) =>
+                                      prev.filter((n) => n.id !== selectedNotification.id)
+                                    );
+                                    setSelectedNotification(null);
+                                    setConfirmDeleteNotifId(null);
+                                  } catch (err) {
+                                    console.error('Error deleting notification case:', err);
+                                  }
+                                }}
+                                className="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold cursor-pointer"
+                              >
+                                Confirmar eliminación
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmDeleteNotifId(null)}
+                                className="px-3 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold cursor-pointer"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteNotifId(selectedNotification.id)}
+                              className="px-3 py-2.5 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Eliminar Caso</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-500">
+                        <AlertTriangle className="w-12 h-12 text-amber-500/50 mb-2 stroke-[1.5]" />
+                        <p className="text-sm font-medium text-slate-400">
+                          Selecciona una notificación para ver detalles y descargar el PDF
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : (
-              /* Tab 2: Video Management Studio */
+              /* Tab 3: Video Management Studio */
               <div className="flex-1 overflow-y-auto custom-scrollbar p-1 sm:p-2">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   

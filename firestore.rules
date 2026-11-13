@@ -13,6 +13,14 @@ service cloud.firestore {
         && data.createdAt is string;
     }
 
+    function isValidNotificationCase(data) {
+      return data.caseId is string && data.caseId.size() > 0 && data.caseId.size() <= 64
+        && data.contactName is string && data.contactName.size() > 0 && data.contactName.size() <= 160
+        && data.phone is string && data.phone.size() > 0 && data.phone.size() <= 40
+        && data.status in ['nuevo', 'en_revision', 'atendido']
+        && data.createdAt is string;
+    }
+
     match /client_submissions/{submissionId} {
       allow create: if isValidId(submissionId) && isValidSubmission(request.resource.data);
       allow get: if isValidId(submissionId);
@@ -23,6 +31,19 @@ service cloud.firestore {
       match /chunks/{chunkId} {
         allow get, create, update, delete: if isValidId(submissionId) && isValidId(chunkId);
         allow list: if isValidId(submissionId);
+      }
+    }
+
+    match /sunat_notifications/{notificationId} {
+      allow create: if isValidId(notificationId) && isValidNotificationCase(request.resource.data);
+      allow get: if isValidId(notificationId);
+      allow list: if true;
+      allow update: if isValidId(notificationId);
+      allow delete: if isValidId(notificationId);
+
+      match /chunks/{chunkId} {
+        allow get, create, update, delete: if isValidId(notificationId) && isValidId(chunkId);
+        allow list: if isValidId(notificationId);
       }
     }
 

@@ -76,24 +76,30 @@ export const DailyVideoSection: React.FC = () => {
     let unsubscribeFirestore: (() => void) | undefined;
     try {
       const docRef = doc(db, 'site_config', 'daily_video');
-      unsubscribeFirestore = onSnapshot(docRef, (snap) => {
-        if (!isMounted) return;
-        if (snap.exists()) {
-          const data = snap.data() as Partial<DailyVideoData>;
-          const clean: DailyVideoData = {
-            title: data.title ?? DEFAULT_DAILY_VIDEO.title,
-            description: data.description ?? DEFAULT_DAILY_VIDEO.description,
-            category: data.category ?? DEFAULT_DAILY_VIDEO.category,
-            videoUrl: typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '',
-            dateFormatted: data.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
-            updatedAt: data.updatedAt ?? new Date().toISOString(),
-          };
-          setVideoData(clean);
-          try {
-            localStorage.setItem('leader_daily_video_config', JSON.stringify(clean));
-          } catch {}
+      unsubscribeFirestore = onSnapshot(
+        docRef,
+        (snap) => {
+          if (!isMounted) return;
+          if (snap.exists()) {
+            const data = snap.data() as Partial<DailyVideoData>;
+            const clean: DailyVideoData = {
+              title: data.title ?? DEFAULT_DAILY_VIDEO.title,
+              description: data.description ?? DEFAULT_DAILY_VIDEO.description,
+              category: data.category ?? DEFAULT_DAILY_VIDEO.category,
+              videoUrl: typeof data.videoUrl === 'string' ? data.videoUrl.trim() : '',
+              dateFormatted: data.dateFormatted ?? DEFAULT_DAILY_VIDEO.dateFormatted,
+              updatedAt: data.updatedAt ?? new Date().toISOString(),
+            };
+            setVideoData(clean);
+            try {
+              localStorage.setItem('leader_daily_video_config', JSON.stringify(clean));
+            } catch {}
+          }
+        },
+        (error) => {
+          console.warn('Firestore daily_video listener offline/unavailable, using local fallback:', error.message);
         }
-      });
+      );
     } catch (err) {
       console.warn('Could not attach Firestore onSnapshot for daily video:', err);
     }
