@@ -9,15 +9,15 @@ export interface AnalyticsConfig {
 const SITE_CONFIG_COLLECTION = 'site_config';
 const ANALYTICS_DOC = 'analytics';
 const STORAGE_KEY = 'leader_ga_config';
+const DEFAULT_MEASUREMENT_ID = 'G-KHDCXVG6WE';
 
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    __leaderGaId?: string;
   }
 }
-
-let initializedMeasurementId = '';
 
 export function isValidMeasurementId(id: string): boolean {
   return /^G-[A-Z0-9]{6,15}$/i.test((id || '').trim());
@@ -72,7 +72,7 @@ export async function getAnalyticsConfig(): Promise<AnalyticsConfig> {
     console.warn('Could not load analytics config from Firestore:', err);
   }
 
-  return localConfig || { measurementId: '', updatedAt: '' };
+  return localConfig || { measurementId: DEFAULT_MEASUREMENT_ID, updatedAt: '' };
 }
 
 export async function saveAnalyticsConfig(measurementId: string): Promise<AnalyticsConfig> {
@@ -101,7 +101,9 @@ export async function saveAnalyticsConfig(measurementId: string): Promise<Analyt
 export function injectGoogleAnalyticsScript(measurementId: string): void {
   const cleanId = measurementId.trim().toUpperCase();
   if (!isValidMeasurementId(cleanId)) return;
-  if (initializedMeasurementId === cleanId) return;
+
+  // Already initialized in index.html or earlier call — avoid duplicate page_view
+  if (window.__leaderGaId === cleanId) return;
 
   const scriptId = 'leader-ga4-script';
   const existingScript = document.getElementById(scriptId);
@@ -110,13 +112,15 @@ export function injectGoogleAnalyticsScript(measurementId: string): void {
   }
 
   window.dataLayer = window.dataLayer || [];
-  function gtag(...args: unknown[]) {
-    window.dataLayer?.push(args);
+  // CRITICAL: gtag.js requires the literal `arguments` object, never `...args` Array!
+  function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer!.push(arguments);
   }
-  window.gtag = gtag;
+  window.gtag = gtag as unknown as (...args: unknown[]) => void;
 
-  gtag('js', new Date());
-  gtag('config', cleanId, {
+  window.gtag('js', new Date());
+  window.gtag('config', cleanId, {
     page_title: document.title,
     page_path: window.location.pathname,
   });
@@ -127,7 +131,7 @@ export function injectGoogleAnalyticsScript(measurementId: string): void {
   script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(cleanId)}`;
   document.head.appendChild(script);
 
-  initializedMeasurementId = cleanId;
+  window.__leaderGaId = cleanId;
 }
 
 export async function initAnalytics(): Promise<void> {
@@ -138,7 +142,7 @@ export async function initAnalytics(): Promise<void> {
 }
 
 export function trackEvent(eventName: string, params?: Record<string, string | number | boolean>): void {
-  if (typeof window.gtag === 'function' && initializedMeasurementId) {
+  if (typeof window.gtag === 'function' && (window.__leaderGaId || DEFAULT_MEASUREMENT_ID)) {
     window.gtag('event', eventName, params || {});
   }
 }
